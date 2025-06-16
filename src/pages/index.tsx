@@ -1,9 +1,15 @@
+'use client';
+
+
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import Image from 'next/image';
+import { ethers } from 'ethers';
 import type { NextPage } from 'next';
 import Head from 'next/head';
 import styles from '../styles/Home.module.css';
 import Card from '../components/card';
+import { useEffect, useState } from 'react';
+import { CONTRACT_ADDRESS, CONTRACT_ABI } from '../constants/FundTokenContract';
 
 export default function Home() {
   const tokens = [
@@ -12,6 +18,26 @@ export default function Home() {
     { name: 'Compound', short: 'COMP', percentage: '10.5%' },
     { name: 'Uniswap', short: 'UNI', percentage: '39.5%' },
   ];
+
+  const [value, setValue] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+ const getValue = async () => {
+     console.log("In function");
+    try {
+      if (!window.ethereum) throw new Error('MetaMask not found');
+
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      const signer = await provider.getSigner();
+      const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
+
+      const result = await contract.name();
+      setValue(result.toString());
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
 
   return (
     <div className="min-h-screen bg-gray-100 p-4 font-sans">
@@ -24,7 +50,7 @@ export default function Home() {
       {/* Main Content */}
       <div className="flex flex-col items-center mt-10 px-4">
         <button className="bg-green-500 text-white px-6 py-3 rounded-full mb-10 hover:bg-green-600 transition">
-          Get Your Piece
+          Get Your Piece... Connect Your Wallet To Start
         </button>
 
         <div className="py-10"></div>
@@ -60,6 +86,9 @@ export default function Home() {
             </div>
           ))}
         </div>
+        <button onClick={getValue} className="mt-6 bg-blue-500 text-white px-6 py-3 rounded-full hover:bg-blue-600 transition"> test</button>
+ {value && <p className="mt-4 text-lg">Value: {value}</p>}
+      {error && <p className="mt-4 text-red-500">Error: {error}</p>}
       </div>
     </div>
   );
