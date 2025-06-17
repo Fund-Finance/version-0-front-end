@@ -40,6 +40,16 @@ export default function Home() {
     }
   };
 
+  const handleMouseOver = () =>
+  {
+    console.log("Mount entered the button");
+  }
+
+  const handleMouseLeave = () =>
+  {
+    console.log("Mouse left the button");
+  }
+
   const { isConnected } = useAccount();
 
   return (
@@ -52,10 +62,8 @@ export default function Home() {
 
       {/* Main Content */}
       <div className="flex flex-col items-center mt-10 px-4">
-      {!isConnected && <GreeterMessage />}
-      {isConnected &&
           <div className="flex items-center justify-center gap-[10vw] p-[2vw]">
-          <UserButton width="40"> Contribute </UserButton>
+          {isConnected && <UserButton width="40"> Contribute </UserButton>}
             <div className="relative group w-50 h-50 rounded-full bg-gray-300 flex items-center justify-center transition-all duration-500 overflow-hidden cursor-pointer">
               {/* Default text in the circle */}
               <span className="text-black group-hover:opacity-0 transition-opacity duration-300 z-10 text-center">
@@ -65,19 +73,25 @@ export default function Home() {
               {/* Pie chart background (only visible on hover) */}
               <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                 {/* Outer pie chart using conic gradient */}
-                <div className="w-full h-full rounded-full bg-[conic-gradient(#3b82f6_0%_25%,#22c55e_25%_50%,#f59e0b_50%_75%,#ef4444_75%_100%)] relative">
+                <div className="w-full h-full rounded-full bg-[conic-gradient(#3b82f6_0%_20%,#22c55e_20%_40%,#f59e0b_40%_60%,#ef4444_60%_100%)] relative">
                   {/* Inner white circle to create the hollow center */}
                   <div className="absolute top-1/2 left-1/2 w-45 h-45 bg-white rounded-full transform -translate-x-1/2 -translate-y-1/2"></div>
                 </div>
               </div>
             </div>
 
-          <UserButton width="40"> Redeem </UserButton>
-          </div>}
+            {isConnected && <UserButton width="40"> Redeem </UserButton>}
+          </div>
 
-          <UserButton> Submit a Proposal </UserButton>
+          {isConnected && <UserButton> Submit a Proposal </UserButton>}
 
-        <div className="py-5"></div>
+      {!isConnected && <GreeterMessage />}
+
+    <h1 className={"bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"}
+        onMouseEnter={handleMouseOver}
+        onMouseLeave={handleMouseLeave}>Test</h1>
+
+      {isConnected && <div className="py-5"></div>}
             <TokenAllocationCard tokens={tokens} />
 
         {/* Pagination dots */}
