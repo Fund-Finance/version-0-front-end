@@ -19,7 +19,7 @@ const DonutChart = ({
   if (!isClient) return null;
   return (
     <div
-      className="relative w-[300px] h-[300px]"
+      className="relative w-[220px] h-[220px] rounded-full"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
@@ -43,7 +43,7 @@ const DonutChart = ({
               : "opacity-0 pointer-events-none"
           }`}
         >
-          <PieChart width={300} height={300}>
+          <PieChart width={220} height={220}>
             <Pie
               data={data}
               cx="50%"
@@ -64,7 +64,7 @@ const DonutChart = ({
         </div>
       )}
       {customHover && (
-        <PieChart width={300} height={300}>
+        <PieChart width={220} height={220}>
           <Pie
             data={data}
             cx="50%"
