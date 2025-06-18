@@ -34,19 +34,27 @@ export default function Home() {
   const getValue = async () => {
     console.log("In function");
     try {
+        console.log("Attempting to connect to MetaMask");
       if (!window.ethereum) throw new Error("MetaMask not found");
+        console.log("MetaMask found, creating provider");
 
       const provider = new ethers.BrowserProvider(window.ethereum);
-      const signer = await provider.getSigner();
+      console.log(provider);
+      // const signer = await provider.getSigner();
+      // console.log(signer);
       const contract = new ethers.Contract(
         CONTRACT_ADDRESS,
         CONTRACT_ABI,
-        signer,
+        provider
       );
+      console.log(contract);
 
-      const result = await contract.name();
+      console.log("Calling contract method to get name");
+      let result = Number(await contract.getTotalValueOfFund()) / (10 ** 18);
+      result = Math.round(result * 100) / 100; // round to 2 decimal places
+      console.log("Result from contract method:", result);
       setValue(result.toString());
-    } catch (err) {}
+    } catch (err) {console.log("An error occurred: ", err);}
   };
 
   const [colorsToHighlight, setColorsToHighlight] = useState(
@@ -121,6 +129,8 @@ export default function Home() {
           onMouseOver={handleMouseOver}
           onMouseLeave={handleMouseLeave}
         />
+    <button onClick={getValue} className="bg-blue-500 text-white p-2 rounded">Test Button</button>
+    <p>{value ? `Total Value of Fund: $${value}` : "Click the button to get the value"}</p>
       </div>
     </div>
   );
