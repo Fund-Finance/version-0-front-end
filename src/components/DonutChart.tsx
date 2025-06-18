@@ -6,12 +6,15 @@ interface DonutChartProps
 {
     data: {name:string, value:number, color:string}[] 
     customHover:boolean
-    children:string[]
+    lines:string[]
 }
 
-const DonutChart = ({data, customHover, children}: DonutChartProps) => {
+const DonutChart = ({data, customHover, lines}: DonutChartProps) => {
   const [isClient, setIsClient] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
+
+  console.log("From donut chart");
+  console.log(lines);
 
   useEffect(() => {
     setIsClient(true); // ensures this runs only in the browser
@@ -33,7 +36,8 @@ const DonutChart = ({data, customHover, children}: DonutChartProps) => {
         }}
       >
         <div className="text-center">
-          <p className="text-xl text-black fade-transition">{children}</p>
+          <p className="text-xl text-black fade-transition">{lines[0]}</p>
+          <p className="text-xl text-black fade-transition">{lines[1]}</p>
         </div>
       </div>
       {!customHover && (

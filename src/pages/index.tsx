@@ -53,8 +53,9 @@ export default function Home() {
     tokens.map((token) => token.color),
   );
   const [mouseHoveringOnCard, setMouseHoveringOnCard] = useState(false);
-  const defaultDonutChartText = "Total Invested: $1,000,000,000";
+  const defaultDonutChartText = ["Total Invested:", "$1,000,000"];
   const [donutChartText, setDonutChartText] = useState(defaultDonutChartText);
+  console.log(donutChartText);
 
   const handleMouseOver = async (index: number) => {
     console.log("Setting index to hightlight: ", index);
@@ -72,7 +73,8 @@ export default function Home() {
     setColorsToHighlight(colors);
 
     setMouseHoveringOnCard(true);
-    setDonutChartText(tokens[index].short);
+
+    setDonutChartText(["2.23 " + tokens[index].short + ":","$1,000.21"]);
     console.log("On mouse over, index set to highlight: ", index);
   };
 
@@ -105,7 +107,7 @@ export default function Home() {
               color: colorsToHighlight[tokens.indexOf(token)],
             }))}
             customHover={mouseHoveringOnCard}
-          > {donutChartText} </DonutChart>
+            lines={donutChartText} />
 
           {isConnected && <UserButton width="40"> Redeem </UserButton>}
         </div>
