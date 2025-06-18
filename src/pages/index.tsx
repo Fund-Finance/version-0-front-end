@@ -115,17 +115,6 @@ export default function Home() {
           onMouseOver={handleMouseOver}
           onMouseLeave={handleMouseLeave}
         />
-
-        {/* Pagination dots */}
-        <button
-          onClick={getValue}
-          className="mt-6 bg-blue-500 text-white px-6 py-3 rounded-full hover:bg-blue-600 transition"
-        >
-          {" "}
-          test
-        </button>
-        {value && <p className="mt-4 text-lg">Value: {value}</p>}
-        {error && <p className="mt-4 text-red-500">Error: {error}</p>}
       </div>
     </div>
   );
