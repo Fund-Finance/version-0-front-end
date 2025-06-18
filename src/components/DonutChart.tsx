@@ -2,13 +2,14 @@
 import { PieChart, Pie, Cell } from "recharts";
 import { useEffect, useState } from "react";
 
-const DonutChart = ({
-  data,
-  customHover,
-}: {
-  data: { name: string; value: number; color: string }[];
-  customHover: boolean;
-}) => {
+interface DonutChartProps
+{
+    data: {name:string, value:number, color:string}[] 
+    customHover:boolean
+    children:string[]
+}
+
+const DonutChart = ({data, customHover, children}: DonutChartProps) => {
   const [isClient, setIsClient] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
 
@@ -32,7 +33,7 @@ const DonutChart = ({
         }}
       >
         <div className="text-center">
-          <p className="text-xl text-black">Total Invested: $1,000,000</p>
+          <p className="text-xl text-black fade-transition">{children}</p>
         </div>
       </div>
       {!customHover && (

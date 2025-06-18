@@ -53,6 +53,8 @@ export default function Home() {
     tokens.map((token) => token.color),
   );
   const [mouseHoveringOnCard, setMouseHoveringOnCard] = useState(false);
+  const defaultDonutChartText = "Total Invested: $1,000,000,000";
+  const [donutChartText, setDonutChartText] = useState(defaultDonutChartText);
 
   const handleMouseOver = async (index: number) => {
     console.log("Setting index to hightlight: ", index);
@@ -70,12 +72,14 @@ export default function Home() {
     setColorsToHighlight(colors);
 
     setMouseHoveringOnCard(true);
+    setDonutChartText(tokens[index].short);
     console.log("On mouse over, index set to highlight: ", index);
   };
 
   const handleMouseLeave = () => {
     // console.log("Mouse left, resetting index to highlight");
     console.log("On mouse leave");
+    setDonutChartText(defaultDonutChartText);
     setMouseHoveringOnCard(false);
     let colors = tokens.map((token) => token.color); // reset to original colors
     setColorsToHighlight(colors);
@@ -94,14 +98,14 @@ export default function Home() {
       <div className="flex flex-col items-center mt-3 px-4">
         <div className="flex items-center justify-center gap-[10vw] p-[2vw]">
           {isConnected && <UserButton width="40"> Contribute </UserButton>}
-          <DonutChart
+        <DonutChart
             data={tokens.map((token) => ({
               name: token.name,
               value: parseFloat(token.percentage),
               color: colorsToHighlight[tokens.indexOf(token)],
             }))}
             customHover={mouseHoveringOnCard}
-          />
+          > {donutChartText} </DonutChart>
 
           {isConnected && <UserButton width="40"> Redeem </UserButton>}
         </div>
