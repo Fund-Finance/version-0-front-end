@@ -99,7 +99,7 @@ export default function Home() {
       {/* Main Content */}
       <div className="flex flex-col items-center mt-3 px-4">
         <div className="flex items-center justify-center gap-[10vw] p-[2vw]">
-          {isConnected && <UserButton width="40"> Contribute </UserButton>}
+          {isConnected && <UserButton width="w-40"> Contribute </UserButton>}
         <DonutChart
             data={tokens.map((token) => ({
               name: token.name,
@@ -109,7 +109,7 @@ export default function Home() {
             customHover={mouseHoveringOnCard}
             lines={donutChartText} />
 
-          {isConnected && <UserButton width="40"> Redeem </UserButton>}
+          {isConnected && <UserButton width="w-40"> Redeem </UserButton>}
         </div>
         {isConnected && <UserButton> Submit a Proposal </UserButton>}
 
