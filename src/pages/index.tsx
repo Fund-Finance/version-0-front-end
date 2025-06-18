@@ -91,7 +91,7 @@ export default function Home() {
       </div>
 
       {/* Main Content */}
-      <div className="flex flex-col items-center mt-10 px-4">
+      <div className="flex flex-col items-center mt-3 px-4">
         <div className="flex items-center justify-center gap-[10vw] p-[2vw]">
           {isConnected && <UserButton width="40"> Contribute </UserButton>}
           <DonutChart
