@@ -1,13 +1,16 @@
-import { ConnectButton } from '@rainbow-me/rainbowkit';
-import type { NextPage } from 'next';
-import Head from 'next/head';
-import styles from '../styles/Home.module.css';
+import { ConnectButton } from "@rainbow-me/rainbowkit";
+import type { NextPage } from "next";
+import Head from "next/head";
+import styles from "../styles/Home.module.css";
 
 const Home: NextPage = () => {
   return (
     <div className={styles.container}>
-    <h1 className="text-red-300 hover:text-red-50 text-center bg-black w-20 align-top"> Hello World! </h1>
-    <button className="px-">Test</button>
+      <h1 className="text-red-300 hover:text-red-50 text-center bg-black w-20 align-top">
+        {" "}
+        Hello World!{" "}
+      </h1>
+      <button className="px-">Test</button>
       <Head>
         <title>RainbowKit App</title>
         <meta
@@ -21,13 +24,13 @@ const Home: NextPage = () => {
         <ConnectButton />
 
         <h1 className={styles.title}>
-          Welcome to <a href="https://www.rainbowkit.com">RainbowKit</a> +{' '}
-          <a href="https://wagmi.sh">wagmi</a> +{' '}
+          Welcome to <a href="https://www.rainbowkit.com">RainbowKit</a> +{" "}
+          <a href="https://wagmi.sh">wagmi</a> +{" "}
           <a href="https://nextjs.org">Next.js!</a>
         </h1>
 
         <p className={styles.description}>
-          Get started by editing{' '}
+          Get started by editing{" "}
           <code className={styles.code}>pages/index.tsx</code>
         </p>
 

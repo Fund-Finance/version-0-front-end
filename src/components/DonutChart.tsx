@@ -1,9 +1,14 @@
-'use client';
-import { PieChart, Pie, Cell } from 'recharts';
-import { useEffect, useState } from 'react';
+"use client";
+import { PieChart, Pie, Cell } from "recharts";
+import { useEffect, useState } from "react";
 
-const DonutChart = ({ data, customHover }:
-                    { data: { name: string, value: number, color: string }[], customHover: boolean }) => {
+const DonutChart = ({
+  data,
+  customHover,
+}: {
+  data: { name: string; value: number; color: string }[];
+  customHover: boolean;
+}) => {
   const [isClient, setIsClient] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
 
@@ -13,69 +18,73 @@ const DonutChart = ({ data, customHover }:
 
   if (!isClient) return null;
   return (
-      <div className="relative w-[300px] h-[300px]"onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}>
-  {/* The donut hole circle matching innerRadius */}
-  <div
-    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-gray-300 flex items-center justify-center"
-    style={{
-      width: 220,  // innerRadius 80 * 2
-      height: 220,
-    }}
-  >
-    <div className="text-center">
-      <p className="text-xl text-black">Total Invested: $1,000,000</p>
-    </div>
-  </div>
-  {!customHover && <div
-        className={`absolute inset-0 transition-opacity duration-300 ${
-          isHovered ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
-        }`}
+    <div
+      className="relative w-[300px] h-[300px]"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      {/* The donut hole circle matching innerRadius */}
+      <div
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-gray-300 flex items-center justify-center"
+        style={{
+          width: 220, // innerRadius 80 * 2
+          height: 220,
+        }}
       >
-  <PieChart width={300} height={300}>
-      <Pie
-        data={data}
-        cx="50%"
-        cy="50%"
-        innerRadius={100}
-        outerRadius={110}
-        startAngle={90}   // start at 12 o'clock
-        endAngle={-270.5}
-        dataKey="value"
-        isAnimationActive={false}
-        stroke="none"
-> 
-        {data.map((entry, index) => (
-          <Cell key={`cell-${index}`} fill={entry.color} />
-        ))}
-      </Pie> 
-    </PieChart>
-    </div>}
-    {
-        customHover &&
+        <div className="text-center">
+          <p className="text-xl text-black">Total Invested: $1,000,000</p>
+        </div>
+      </div>
+      {!customHover && (
+        <div
+          className={`absolute inset-0 transition-opacity duration-300 ${
+            isHovered
+              ? "opacity-100 pointer-events-auto"
+              : "opacity-0 pointer-events-none"
+          }`}
+        >
+          <PieChart width={300} height={300}>
+            <Pie
+              data={data}
+              cx="50%"
+              cy="50%"
+              innerRadius={100}
+              outerRadius={110}
+              startAngle={90} // start at 12 o'clock
+              endAngle={-270.5}
+              dataKey="value"
+              isAnimationActive={false}
+              stroke="none"
+            >
+              {data.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={entry.color} />
+              ))}
+            </Pie>
+          </PieChart>
+        </div>
+      )}
+      {customHover && (
         <PieChart width={300} height={300}>
-      <Pie
-        data={data}
-        cx="50%"
-        cy="50%"
-        innerRadius={100}
-        outerRadius={110}
-        startAngle={90}   // start at 12 o'clock
-        endAngle={-270.5}
-        dataKey="value"
-        isAnimationActive={false}
-        stroke="none"
-> 
-        {data.map((entry, index) => (
-          <Cell key={`cell-${index}`} fill={entry.color} />
-        ))}
-      </Pie> 
-    </PieChart>
-
-    }
-</div>
+          <Pie
+            data={data}
+            cx="50%"
+            cy="50%"
+            innerRadius={100}
+            outerRadius={110}
+            startAngle={90} // start at 12 o'clock
+            endAngle={-270.5}
+            dataKey="value"
+            isAnimationActive={false}
+            stroke="none"
+          >
+            {data.map((entry, index) => (
+              <Cell key={`cell-${index}`} fill={entry.color} />
+            ))}
+          </Pie>
+        </PieChart>
+      )}
+    </div>
   );
 };
 
 export default DonutChart;
-
