@@ -47,14 +47,7 @@ export default function Home() {
     }
   };
     
-  let initialColorsToHighlight = [
-    "#3b82f6", // blue
-    "#f59e0b", // yellow
-    "#22c55e", // green
-    "#ef4444",  // red,
-  ];
-
-  const [colorsToHighlight, setColorsToHighlight] = useState(initialColorsToHighlight);
+  const [colorsToHighlight, setColorsToHighlight] = useState(tokens.map(token => token.color));
   const [mouseHoveringOnCard, setMouseHoveringOnCard] = useState(false);
 
   const handleMouseOver = async (index:number) =>
@@ -62,11 +55,12 @@ export default function Home() {
       console.log("Setting index to hightlight: ", index);
       const unHighlightedColor = "#4b5563"; // dark grey 
       let colors = [];
-      for( let i = 0; i < initialColorsToHighlight.length; i++)
+      const currentColors = tokens.map(token => token.color);
+      for( let i = 0; i < currentColors.length; i++)
       {
           if( i === index)
           {
-              colors.push(initialColorsToHighlight[i]);
+              colors.push(currentColors[i]);
           }
           else
           {
