@@ -5,14 +5,13 @@ import { ethers } from "ethers";
 import { useState, useEffect } from "react";
 import { CONTRACT_ADDRESS, CONTRACT_ABI } from "../constants/FundTokenContract";
 import { useAccount } from "wagmi";
-import {getValue, populateWeb3Interface} from "../utils/readContract";
+import { getValue, populateWeb3Interface } from "../utils/readContract";
 
 import GreeterMessage from "../components/GreeterMessage";
 import UserButton from "../components/UserButton";
 
 import TokenAllocationCard from "../components/TokenAllocationCard";
 import DonutChart from "../components/DonutChart";
-import { init } from "next/dist/compiled/webpack/webpack";
 
 interface Token {
   name: string;
@@ -22,49 +21,55 @@ interface Token {
 }
 
 export default function Home() {
+  // general variables used
   const tokens = [
     { name: "Ethereum", short: "ETH", percentage: "25%", color: "#3b82f6" },
     { name: "Bitcoin", short: "BTC", percentage: "25%", color: "#f59e0b" },
     { name: "Compound", short: "COMP", percentage: "10%", color: "#22c55e" },
     { name: "Uniswap", short: "UNI", percentage: "40%", color: "#ef4444" },
   ];
+
+  const { isConnected } = useAccount();
+
+  // the state variables for this front-end
   const [fundTotalValue, setFundTotalValue] = useState<string>("1.00");
   const [mouseHoveringOnCard, setMouseHoveringOnCard] = useState(false);
+  const [colorsToHighlight, setColorsToHighlight] = useState(
+    tokens.map((token) => token.color),
+  );
+  const [donutChartText, setDonutChartText] = useState(["Total Invested:", "$0.00"]);
 
-  useEffect(() => {
-      const init = async () => {
-      if (typeof window === "undefined")
+  // this use Effect will initialize the front-end
+  // and query the backend frequently to update the neede values
+  useEffect(() =>
+  {
+    // The initialize function which runs only once
+    async function init()
+    {
+      
+      if (typeof window === "undefined") 
           return;
       await populateWeb3Interface();
       const totalValue = await getValue();
       setFundTotalValue(totalValue);
-      setDonutChartText(["Total Invested:", totalValue]);
-      };
-      async function queryBackend()
-      {
-        const totalValue = await getValue();
+      setDonutChartText(["Total Invested:", "$" + totalValue]);
+    };
 
-        setFundTotalValue(totalValue);
-      }
-      init();
-      queryBackend();
+    // The queryBackend function which is meant to
+    // run at a set interval
+    async function queryBackend()
+    {
+      const totalValue = await getValue();
+      setFundTotalValue(totalValue);
+    }
+    init();
+    queryBackend();
 
-      const interval = setInterval(queryBackend, 1000);
-      return () => clearInterval(interval); // Cleanup interval on unmount
-
+    // Set an interval to query the backend every second
+    const interval = setInterval(queryBackend, 1000);
+    return () => clearInterval(interval); // Cleanup interval on unmount
   }, []);
 
-
-useEffect(() => {
-  console.log("Updated fundTotalValue:", fundTotalValue);
-}, [fundTotalValue]);
-
-
-  const [colorsToHighlight, setColorsToHighlight] = useState(
-    tokens.map((token) => token.color),
-  );
-  const defaultDonutChartText = ["Total Invest:", fundTotalValue ? `$${fundTotalValue}` : "$1.00"];
-  const [donutChartText, setDonutChartText] = useState(defaultDonutChartText);
 
   const handleMouseOver = async (index: number) => {
     const unHighlightedColor = "#4b5563"; // dark grey
@@ -82,19 +87,18 @@ useEffect(() => {
 
     setMouseHoveringOnCard(true);
 
-    setDonutChartText(["2.23 " + tokens[index].short + ":","$1,000.21"]);
+    setDonutChartText(["2.23 " + tokens[index].short + ":", "$1,000.21"]);
   };
 
   const handleMouseLeave = () => {
     console.log("Fund Total Value: ", fundTotalValue);
-    let donutChartText = ["Total Invested:", fundTotalValue]; 
+    let donutChartText = ["Total Invested:", "$" + fundTotalValue];
     setDonutChartText(donutChartText);
     setMouseHoveringOnCard(false);
     let colors = tokens.map((token) => token.color); // reset to original colors
     setColorsToHighlight(colors);
   };
 
-  const { isConnected } = useAccount();
   return (
     <div className="min-h-screen bg-gray-100 p-4 font-sans">
       {/* Header */}
@@ -107,14 +111,15 @@ useEffect(() => {
       <div className="flex flex-col items-center mt-3 px-4">
         <div className="flex items-center justify-center gap-[10vw] p-[2vw]">
           {isConnected && <UserButton width="w-40"> Contribute </UserButton>}
-        <DonutChart
+          <DonutChart
             data={tokens.map((token) => ({
               name: token.name,
               value: parseFloat(token.percentage),
               color: colorsToHighlight[tokens.indexOf(token)],
             }))}
             customHover={mouseHoveringOnCard}
-            lines={donutChartText} />
+            lines={donutChartText}
+          />
 
           {isConnected && <UserButton width="w-40"> Redeem </UserButton>}
         </div>

@@ -2,14 +2,13 @@
 import { PieChart, Pie, Cell } from "recharts";
 import { useEffect, useState } from "react";
 
-interface DonutChartProps
-{
-    data: {name:string, value:number, color:string}[] 
-    customHover:boolean
-    lines:string[]
+interface DonutChartProps {
+  data: { name: string; value: number; color: string }[];
+  customHover: boolean;
+  lines: string[];
 }
 
-const DonutChart = ({data, customHover, lines}: DonutChartProps) => {
+const DonutChart = ({ data, customHover, lines }: DonutChartProps) => {
   const [isClient, setIsClient] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
 
