@@ -13,9 +13,6 @@ const DonutChart = ({data, customHover, lines}: DonutChartProps) => {
   const [isClient, setIsClient] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
 
-  console.log("From donut chart");
-  console.log(lines);
-
   useEffect(() => {
     setIsClient(true); // ensures this runs only in the browser
   }, []);

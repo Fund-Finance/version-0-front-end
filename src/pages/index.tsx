@@ -1,17 +1,18 @@
 "use client";
 
 import { ConnectButton } from "@rainbow-me/rainbowkit";
-import Image from "next/image";
 import { ethers } from "ethers";
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { CONTRACT_ADDRESS, CONTRACT_ABI } from "../constants/FundTokenContract";
 import { useAccount } from "wagmi";
+import {getValue, populateWeb3Interface} from "../utils/readContract";
 
 import GreeterMessage from "../components/GreeterMessage";
 import UserButton from "../components/UserButton";
 
 import TokenAllocationCard from "../components/TokenAllocationCard";
 import DonutChart from "../components/DonutChart";
+import { init } from "next/dist/compiled/webpack/webpack";
 
 interface Token {
   name: string;
@@ -27,46 +28,45 @@ export default function Home() {
     { name: "Compound", short: "COMP", percentage: "10%", color: "#22c55e" },
     { name: "Uniswap", short: "UNI", percentage: "40%", color: "#ef4444" },
   ];
+  const [fundTotalValue, setFundTotalValue] = useState<string>("1.00");
+  const [mouseHoveringOnCard, setMouseHoveringOnCard] = useState(false);
 
-  const [value, setValue] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  useEffect(() => {
+      const init = async () => {
+      if (typeof window === "undefined")
+          return;
+      await populateWeb3Interface();
+      const totalValue = await getValue();
+      setFundTotalValue(totalValue);
+      setDonutChartText(["Total Invested:", totalValue]);
+      };
+      async function queryBackend()
+      {
+        const totalValue = await getValue();
 
-  const getValue = async () => {
-    console.log("In function");
-    try {
-        console.log("Attempting to connect to MetaMask");
-      if (!window.ethereum) throw new Error("MetaMask not found");
-        console.log("MetaMask found, creating provider");
+        setFundTotalValue(totalValue);
+      }
+      init();
+      queryBackend();
 
-      const provider = new ethers.BrowserProvider(window.ethereum);
-      console.log(provider);
-      // const signer = await provider.getSigner();
-      // console.log(signer);
-      const contract = new ethers.Contract(
-        CONTRACT_ADDRESS,
-        CONTRACT_ABI,
-        provider
-      );
-      console.log(contract);
+      const interval = setInterval(queryBackend, 1000);
+      return () => clearInterval(interval); // Cleanup interval on unmount
 
-      console.log("Calling contract method to get name");
-      let result = Number(await contract.getTotalValueOfFund()) / (10 ** 18);
-      result = Math.round(result * 100) / 100; // round to 2 decimal places
-      console.log("Result from contract method:", result);
-      setValue(result.toString());
-    } catch (err) {console.log("An error occurred: ", err);}
-  };
+  }, []);
+
+
+useEffect(() => {
+  console.log("Updated fundTotalValue:", fundTotalValue);
+}, [fundTotalValue]);
+
 
   const [colorsToHighlight, setColorsToHighlight] = useState(
     tokens.map((token) => token.color),
   );
-  const [mouseHoveringOnCard, setMouseHoveringOnCard] = useState(false);
-  const defaultDonutChartText = ["Total Invested:", "$1,000,000"];
+  const defaultDonutChartText = ["Total Invest:", fundTotalValue ? `$${fundTotalValue}` : "$1.00"];
   const [donutChartText, setDonutChartText] = useState(defaultDonutChartText);
-  console.log(donutChartText);
 
   const handleMouseOver = async (index: number) => {
-    console.log("Setting index to hightlight: ", index);
     const unHighlightedColor = "#4b5563"; // dark grey
     let colors = [];
     const currentColors = tokens.map((token) => token.color);
@@ -83,13 +83,12 @@ export default function Home() {
     setMouseHoveringOnCard(true);
 
     setDonutChartText(["2.23 " + tokens[index].short + ":","$1,000.21"]);
-    console.log("On mouse over, index set to highlight: ", index);
   };
 
   const handleMouseLeave = () => {
-    // console.log("Mouse left, resetting index to highlight");
-    console.log("On mouse leave");
-    setDonutChartText(defaultDonutChartText);
+    console.log("Fund Total Value: ", fundTotalValue);
+    let donutChartText = ["Total Invested:", fundTotalValue]; 
+    setDonutChartText(donutChartText);
     setMouseHoveringOnCard(false);
     let colors = tokens.map((token) => token.color); // reset to original colors
     setColorsToHighlight(colors);
@@ -129,8 +128,6 @@ export default function Home() {
           onMouseOver={handleMouseOver}
           onMouseLeave={handleMouseLeave}
         />
-    <button onClick={getValue} className="bg-blue-500 text-white p-2 rounded">Test Button</button>
-    <p>{value ? `Total Value of Fund: $${value}` : "Click the button to get the value"}</p>
       </div>
     </div>
   );
