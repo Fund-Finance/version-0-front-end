@@ -1,6 +1,6 @@
 // components/ProposalModal.tsx
 import { motion, AnimatePresence } from 'framer-motion';
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 
 interface ProposalModalProps {
   isOpen: boolean;
@@ -8,16 +8,36 @@ interface ProposalModalProps {
 }
 
 export default function ProposalModal({ isOpen, onClose }: ProposalModalProps) {
+  const modalRef = useRef<HTMLDivElement>(null);
+
+  // Close when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (modalRef.current && !modalRef.current.contains(event.target as Node)) {
+        onClose();
+      }
+    }
+
+    if (isOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isOpen, onClose]);
+
   return (
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+          className="fixed inset-0 bg-white/40 backdrop-blur-sm flex items-center justify-center z-50"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
         >
           <motion.div
+            ref={modalRef}
             className="bg-white p-6 rounded-lg w-full max-w-md shadow-lg"
             initial={{ scale: 0.8, opacity: 0, y: 50 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
@@ -53,3 +73,4 @@ export default function ProposalModal({ isOpen, onClose }: ProposalModalProps) {
     </AnimatePresence>
   );
 }
+
