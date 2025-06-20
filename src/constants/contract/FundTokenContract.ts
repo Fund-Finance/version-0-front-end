@@ -1,6 +1,6 @@
-export const CONTRACT_ADDRESS = "0x70e754531418461eF2366b72cd396337d2AD6D5d";
+export const FUND_TOKEN_CONTRACT_ADDRESS = "0x70e754531418461eF2366b72cd396337d2AD6D5d";
 
-export const CONTRACT_ABI = [
+export const FUND_TOKEN_CONTRACT_ABI = [
   {
     inputs: [
       {
@@ -358,6 +358,25 @@ export const CONTRACT_ABI = [
     stateMutability: "view",
     type: "function",
   },
+  {
+    "inputs": [
+        {
+          "internalType": "address",
+          "name": "_asset",
+          "type": "address"
+        }
+      ],
+      "name": "getValueOfAssetInFund",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
   {
     inputs: [
       {

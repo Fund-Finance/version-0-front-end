@@ -1,0 +1,16 @@
+
+export const usdcAddress = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913";
+export const wethAddress = "0x4200000000000000000000000000000000000006";
+export const cbBTCAddress = "0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf";
+
+export const tokenAddressToName: Map<string, string[]> = new Map([
+    [usdcAddress, ["United States Dollar Coin","USDC"]],
+    [wethAddress, ["Wrapped Ethereum", "wETH"]],
+    [cbBTCAddress, ["Coinbase Bitcoin", "cbBTC"]]
+]);
+
+export const tokenNameToColor: Map<string, string> = new Map([
+    ["United States Dollar Coin", "#2775CA"],
+    ["Wrapped Ethereum", "#6F00FF"],
+    ["Coinbase Bitcoin", "#F7931A"]
+]);
