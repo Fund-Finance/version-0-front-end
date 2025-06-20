@@ -10,7 +10,7 @@ import UserButton from "../components/UserButton";
 
 import TokenAllocationCard from "../components/TokenAllocationCard";
 import DonutChart from "../components/DonutChart";
-import { tokenAddressToName, tokenNameToColor } from "../constants/ERC20Contracts";
+import { tokenAddressToName, tokenNameToColor } from "../constants/contract/ERC20Contracts";
 
 interface TokenInformation
 {
@@ -106,17 +106,12 @@ export default function Home() {
 
   // handles the case when the mouse leaves the card
   const handleMouseLeaveCardStack = () => {
-    console.log("Mouse left card stack");
     let donutChartText = ["Total Invested:", "$" + fundTotalValue];
     setDonutChartText(donutChartText);
     setMouseHoveringOnCard(false);
     let colors = tokensArray.map((token) => token.color); // reset to original colors
     setColorsToHighlight(colors);
   };
-
-  useEffect(() => {
-      console.log("donutChartText updated:", donutChartText);
-  } , [donutChartText]);
 
   return (
     <div className="min-h-screen bg-gray-100 p-4 font-sans">

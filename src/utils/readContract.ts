@@ -1,8 +1,8 @@
 "use client";
 
-import { FUND_TOKEN_CONTRACT_ADDRESS, FUND_TOKEN_CONTRACT_ABI } from "../constants/FundTokenContract";
+import { FUND_TOKEN_CONTRACT_ADDRESS, FUND_TOKEN_CONTRACT_ABI } from "../constants/contract/FundTokenContract";
 import { ethers } from "ethers";
-import { GenericERC20ContractABI } from "../constants/GenericERC20ContractABI";
+import { GenericERC20ContractABI } from "../constants/contract/GenericERC20ContractABI";
 
 interface Web3Interface {
   provider: ethers.BrowserProvider | null;
