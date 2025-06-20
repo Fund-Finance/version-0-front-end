@@ -1,13 +1,17 @@
-// components/ProposalModal.tsx
 import { motion, AnimatePresence } from 'framer-motion';
-import React, { useEffect, useState, useRef } from 'react';
-import Image from "next/image";
+import React, { useEffect, useRef, useState } from 'react';
 
 interface ProposalModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
-const tokenOptions = ['ETH', 'BTC', 'USDT', 'DAI', 'MATIC']; // you can customize this list
+
+type TokenPair = {
+  from: string;
+  to: string;
+};
+
+const tokenOptions = ['ETH', 'BTC', 'USDT', 'DAI', 'MATIC'];
 
 const tokenLogos: Record<string, string> = {
   ETH: 'https://cryptologos.cc/logos/ethereum-eth-logo.png',
@@ -17,13 +21,13 @@ const tokenLogos: Record<string, string> = {
   MATIC: 'https://cryptologos.cc/logos/polygon-matic-logo.png',
 };
 
-
 export default function ProposalModal({ isOpen, onClose }: ProposalModalProps) {
   const modalRef = useRef<HTMLDivElement>(null);
-const [fromToken, setFromToken] = useState('ETH');
-const [toToken, setToToken] = useState('BTC');
+  const [tokenPairs, setTokenPairs] = useState<TokenPair[]>([
+    { from: 'ETH', to: 'BTC' }
+  ]);
 
-  // Close when clicking outside
+  // Click outside to close
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (modalRef.current && !modalRef.current.contains(event.target as Node)) {
@@ -32,11 +36,11 @@ const [toToken, setToToken] = useState('BTC');
     }
 
     if (isOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
+      document.addEventListener('mousedown', handleClickOutside);
     }
 
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [isOpen, onClose]);
 
@@ -59,49 +63,58 @@ const [toToken, setToToken] = useState('BTC');
           >
             <h2 className="text-xl font-bold text-center mb-4">Your Proposal</h2>
 
+            {/* Dynamic Token Pair Selectors */}
+            {tokenPairs.map((pair, index) => (
+              <div key={index} className="flex items-center justify-between gap-4 mb-4">
+                <div className="flex items-center gap-2 flex-1">
+                  <img src={tokenLogos[pair.from]} alt={pair.from} className="w-6 h-6" />
+                  <select
+                    className="border rounded p-2 flex-1"
+                    value={pair.from}
+                    onChange={(e) => {
+                      const updated = [...tokenPairs];
+                      updated[index].from = e.target.value;
+                      setTokenPairs(updated);
+                    }}
+                  >
+                    {tokenOptions.map(token => (
+                      <option key={token} value={token}>{token}</option>
+                    ))}
+                  </select>
+                </div>
 
-        <div className="flex items-center justify-between gap-4 mb-4">
-          {/* From token */}
-          <div className="flex items-center gap-2 flex-1">
-            <Image
-              className="w-6 h-6"
-              src={"/Wrapped Ethereum.png"}
-              alt={"ETH"}
-              width="64"
-              height="64"
-            />
-            <select
-              className="border rounded p-2 flex-1"
-              value={fromToken}
-              onChange={(e) => setFromToken(e.target.value)}
+                <span className="text-xl">&rarr;</span>
+
+                <div className="flex items-center gap-2 flex-1">
+                  <img src={tokenLogos[pair.to]} alt={pair.to} className="w-6 h-6" />
+                  <select
+                    className="border rounded p-2 flex-1"
+                    value={pair.to}
+                    onChange={(e) => {
+                      const updated = [...tokenPairs];
+                      updated[index].to = e.target.value;
+                      setTokenPairs(updated);
+                    }}
+                  >
+                    {tokenOptions.map(token => (
+                      <option key={token} value={token}>{token}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            ))}
+
+            {/* Add Button */}
+            <button
+              type="button"
+              onClick={() => setTokenPairs([...tokenPairs, { from: 'ETH', to: 'BTC' }])}
+              className="flex items-center justify-center mx-auto mb-4 w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 text-xl font-bold"
             >
-              {tokenOptions.map((token) => (
-                <option key={token} value={token}>{token}</option>
-              ))}
-            </select>
-          </div>
+              +
+            </button>
 
-          <span className="text-xl">&rarr;</span>
-
-          {/* To token */}
-          <div className="flex items-center gap-2 flex-1">
-            <img src={tokenLogos[toToken]} alt={toToken} className="w-6 h-6" />
-            <select
-              className="border rounded p-2 flex-1"
-              value={toToken}
-              onChange={(e) => setToToken(e.target.value)}
-            >
-              {tokenOptions.map((token) => (
-                <option key={token} value={token}>{token}</option>
-              ))}
-            </select>
-          </div>
-        </div>
-                    
-            
-
-            <div className="text-center mb-2">
-              <div className="w-6 h-6 bg-gray-300 mx-auto mb-2" /> {/* Placeholder icon */}
+            {/* Justification Textarea */}
+            <div className="text-center mb-4">
               <label className="block font-medium mb-1">Justification</label>
               <textarea
                 className="w-full border rounded p-2 h-24 resize-none"
@@ -109,8 +122,9 @@ const [toToken, setToToken] = useState('BTC');
               />
             </div>
 
+            {/* Submit Button */}
             <button
-              className="mt-4 w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600 transition"
+              className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600 transition"
               onClick={onClose}
             >
               Submit
