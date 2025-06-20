@@ -13,12 +13,6 @@ import DonutChart from "../components/DonutChart";
 import { tokenAddressToName, tokenNameToColor } from "../constants/ERC20Contracts";
 
 export default function Home() {
-  // general variables used
-  let initialTokens = [
-    { name: "Ethereum", short: "ETH", percentage: "25%", color: "#3b82f6", address: "" },
-    { name: "Bitcoin", short: "BTC", percentage: "25%", color: "#f59e0b", address: "" },
-    { name: "Compound", short: "COMP", percentage: "10%", color: "#22c55e", address: "" },
-  ];
 
   const { isConnected } = useAccount();
 
@@ -53,9 +47,11 @@ export default function Home() {
           const tokenName = tokenAddressToName.get(tokenAddress)[0];
           const tokenShort = tokenAddressToName.get(tokenAddress)[1];
           const tokenColor = tokenNameToColor.get(tokenName);
+          const tokenHoldings = await getERC20HoldingsInFund(tokenAddress);
           const tokenDollarValue = await getERC20ValueInFund(fundAssets[i][0]);
           const tokenPercentage = (Number(tokenDollarValue) / Number(totalValue) * 100).toFixed(2) + "%";
-          tokens.push({name: tokenName, short: tokenShort, percentage: tokenPercentage, color: tokenColor, address: tokenAddress});
+          tokens.push({name: tokenName, short: tokenShort, percentage: tokenPercentage, color: tokenColor, address: tokenAddress,
+          holdings: tokenHoldings, value: tokenDollarValue});
       }
       setTokensArray(tokens);
       setColorsToHighlight(tokens.map((token) => token.color));
@@ -74,10 +70,12 @@ export default function Home() {
           const tokenAddress = fundAssets[i][0];
           const tokenName = tokenAddressToName.get(tokenAddress)[0];
           const tokenShort = tokenAddressToName.get(tokenAddress)[1];
+          const tokenHoldings = await getERC20HoldingsInFund(tokenAddress);
           const tokenColor = tokenNameToColor.get(tokenName);
           const tokenDollarValue = await getERC20ValueInFund(fundAssets[i][0]);
           const tokenPercentage = (Number(tokenDollarValue) / Number(totalValue) * 100).toFixed(2) + "%";
-          tokens.push({name: tokenName, short: tokenShort, percentage: tokenPercentage, color: tokenColor, address: tokenAddress});
+          tokens.push({name: tokenName, short: tokenShort, percentage: tokenPercentage, color: tokenColor, address: tokenAddress,
+          holdings: tokenHoldings, value: tokenDollarValue});
       }
       setTokensArray(tokens);
 
@@ -86,7 +84,7 @@ export default function Home() {
     queryBackend();
 
     // Set an interval to query the backend every second
-    const interval = setInterval(queryBackend, 5000);
+    const interval = setInterval(queryBackend, 1000);
     return () => clearInterval(interval); // Cleanup interval on unmount
   }, []);
 
@@ -94,35 +92,29 @@ export default function Home() {
   // handles the case when the mouse is hovering over a card
   const handleMouseOverCard = async (index: number) => {
     const unHighlightedColor = "#4b5563"; // dark grey
-    let colors = [];
-    const currentColors = tokensArray.map((token) => token.color);
-    for (let i = 0; i < currentColors.length; i++) {
-      if (i === index) {
-        colors.push(currentColors[i]);
-      } else {
-        colors.push(unHighlightedColor);
-      }
-    }
+    let colors = Array(tokensArray.length).fill(unHighlightedColor); // initialize all colors to unhighlighted
+    colors[index] = tokensArray[index].color; // highlight the current token
 
     setColorsToHighlight(colors);
 
     setMouseHoveringOnCard(true);
 
-    const tokenHoldings = await getERC20HoldingsInFund(tokensArray[index].address);
-    const tokenValue = await getERC20ValueInFund(tokensArray[index].address);
-
-    setDonutChartText([tokenHoldings + " " + tokensArray[index].short + ":", "$" + tokenValue]);
+    setDonutChartText([tokensArray[index].holdings + " " + tokensArray[index].short + ":", "$" + tokensArray[index].value]);
   };
 
   // handles the case when the mouse leaves the card
   const handleMouseLeaveCardStack = () => {
-    console.log("Fund Total Value: ", fundTotalValue);
+    console.log("Mouse left card stack");
     let donutChartText = ["Total Invested:", "$" + fundTotalValue];
     setDonutChartText(donutChartText);
     setMouseHoveringOnCard(false);
     let colors = tokensArray.map((token) => token.color); // reset to original colors
     setColorsToHighlight(colors);
   };
+
+  useEffect(() => {
+      console.log("donutChartText updated:", donutChartText);
+  } , [donutChartText]);
 
   return (
     <div className="min-h-screen bg-gray-100 p-4 font-sans">
