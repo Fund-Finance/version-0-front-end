@@ -1,5 +1,6 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import React, { useEffect, useRef, useState } from 'react';
+import { Trash2 } from 'lucide-react';
 
 interface ProposalModalProps {
   isOpen: boolean;
@@ -27,7 +28,7 @@ export default function ProposalModal({ isOpen, onClose }: ProposalModalProps) {
     { from: 'ETH', to: 'BTC' }
   ]);
 
-  // Click outside to close
+  // Close modal when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (modalRef.current && !modalRef.current.contains(event.target as Node)) {
@@ -63,9 +64,9 @@ export default function ProposalModal({ isOpen, onClose }: ProposalModalProps) {
           >
             <h2 className="text-xl font-bold text-center mb-4">Your Proposal</h2>
 
-            {/* Dynamic Token Pair Selectors */}
+            {/* Token Pair Selectors */}
             {tokenPairs.map((pair, index) => (
-              <div key={index} className="flex items-center justify-between gap-4 mb-4">
+              <div key={index} className="flex items-center justify-between gap-2 mb-4">
                 <div className="flex items-center gap-2 flex-1">
                   <img src={tokenLogos[pair.from]} alt={pair.from} className="w-6 h-6" />
                   <select
@@ -101,10 +102,23 @@ export default function ProposalModal({ isOpen, onClose }: ProposalModalProps) {
                     ))}
                   </select>
                 </div>
+
+                {/* Trash Button */}
+                {tokenPairs.length > 1 && (
+                  <button
+                    onClick={() =>
+                      setTokenPairs(tokenPairs.filter((_, i) => i !== index))
+                    }
+                    className="text-red-500 hover:text-red-700"
+                    aria-label="Remove token pair"
+                  >
+                    <Trash2 className="w-5 h-5" />
+                  </button>
+                )}
               </div>
             ))}
 
-            {/* Add Button */}
+            {/* Add New Token Pair */}
             <button
               type="button"
               onClick={() => setTokenPairs([...tokenPairs, { from: 'ETH', to: 'BTC' }])}
@@ -113,7 +127,7 @@ export default function ProposalModal({ isOpen, onClose }: ProposalModalProps) {
               +
             </button>
 
-            {/* Justification Textarea */}
+            {/* Justification */}
             <div className="text-center mb-4">
               <label className="block font-medium mb-1">Justification</label>
               <textarea
