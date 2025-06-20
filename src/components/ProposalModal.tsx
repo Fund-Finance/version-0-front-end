@@ -1,14 +1,27 @@
 // components/ProposalModal.tsx
 import { motion, AnimatePresence } from 'framer-motion';
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
+import Image from "next/image";
 
 interface ProposalModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
+const tokenOptions = ['ETH', 'BTC', 'USDT', 'DAI', 'MATIC']; // you can customize this list
+
+const tokenLogos: Record<string, string> = {
+  ETH: 'https://cryptologos.cc/logos/ethereum-eth-logo.png',
+  BTC: 'https://cryptologos.cc/logos/bitcoin-btc-logo.png',
+  USDT: 'https://cryptologos.cc/logos/tether-usdt-logo.png',
+  DAI: 'https://cryptologos.cc/logos/multi-collateral-dai-dai-logo.png',
+  MATIC: 'https://cryptologos.cc/logos/polygon-matic-logo.png',
+};
+
 
 export default function ProposalModal({ isOpen, onClose }: ProposalModalProps) {
   const modalRef = useRef<HTMLDivElement>(null);
+const [fromToken, setFromToken] = useState('ETH');
+const [toToken, setToToken] = useState('BTC');
 
   // Close when clicking outside
   useEffect(() => {
@@ -46,11 +59,46 @@ export default function ProposalModal({ isOpen, onClose }: ProposalModalProps) {
           >
             <h2 className="text-xl font-bold text-center mb-4">Your Proposal</h2>
 
-            <div className="flex justify-between mb-4 px-2">
-              <span>XX ETH</span>
-              <span>&rarr;</span>
-              <span>YY BTC</span>
-            </div>
+
+        <div className="flex items-center justify-between gap-4 mb-4">
+          {/* From token */}
+          <div className="flex items-center gap-2 flex-1">
+            <Image
+              className="w-6 h-6"
+              src={"/Wrapped Ethereum.png"}
+              alt={"ETH"}
+              width="64"
+              height="64"
+            />
+            <select
+              className="border rounded p-2 flex-1"
+              value={fromToken}
+              onChange={(e) => setFromToken(e.target.value)}
+            >
+              {tokenOptions.map((token) => (
+                <option key={token} value={token}>{token}</option>
+              ))}
+            </select>
+          </div>
+
+          <span className="text-xl">&rarr;</span>
+
+          {/* To token */}
+          <div className="flex items-center gap-2 flex-1">
+            <img src={tokenLogos[toToken]} alt={toToken} className="w-6 h-6" />
+            <select
+              className="border rounded p-2 flex-1"
+              value={toToken}
+              onChange={(e) => setToToken(e.target.value)}
+            >
+              {tokenOptions.map((token) => (
+                <option key={token} value={token}>{token}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+                    
+            
 
             <div className="text-center mb-2">
               <div className="w-6 h-6 bg-gray-300 mx-auto mb-2" /> {/* Placeholder icon */}
