@@ -24,9 +24,20 @@ const tokenLogos: Record<string, string> = {
 
 export default function ProposalModal({ isOpen, onClose }: ProposalModalProps) {
   const modalRef = useRef<HTMLDivElement>(null);
-  const [tokenPairs, setTokenPairs] = useState<TokenPair[]>([
-    { from: 'ETH', to: 'BTC' }
-  ]);
+  const [tokenPairs, setTokenPairs] = useState<TokenPair[]>([{ from: 'ETH', to: 'BTC' }]);
+  const [justification, setJustification] = useState('');
+
+  // Reset form when modal closes
+  useEffect(() => {
+    if (!isOpen) {
+      resetForm();
+    }
+  }, [isOpen]);
+
+  const resetForm = () => {
+    setTokenPairs([{ from: 'ETH', to: 'BTC' }]);
+    setJustification('');
+  };
 
   // Close modal when clicking outside
   useEffect(() => {
@@ -103,7 +114,6 @@ export default function ProposalModal({ isOpen, onClose }: ProposalModalProps) {
                   </select>
                 </div>
 
-                {/* Trash Button */}
                 {tokenPairs.length > 1 && (
                   <button
                     onClick={() =>
@@ -133,6 +143,8 @@ export default function ProposalModal({ isOpen, onClose }: ProposalModalProps) {
               <textarea
                 className="w-full border rounded p-2 h-24 resize-none"
                 placeholder="Enter justification..."
+                value={justification}
+                onChange={(e) => setJustification(e.target.value)}
               />
             </div>
 
