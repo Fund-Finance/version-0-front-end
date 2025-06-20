@@ -20,13 +20,12 @@ const TokenAllocationCard = ({
   onMouseLeave,
 }: TokenAllocationCardProps) => {
   return (
-    <div className="flex flex-col py-3 w-1/2 rounded-2xl overflow-hidden shadow-xl bg-white">
+    <div className="flex flex-col py-3 w-1/2 rounded-2xl overflow-hidden shadow-xl bg-white" onMouseLeave={onMouseLeave}>
       {tokens.map((token, index: number) => (
         <div
           key={index}
           className="px-4 py-3 flex items-center space-x-4 hover:bg-blue-300"
-          onMouseEnter={() => onMouseOver(index)}
-          onMouseLeave={onMouseLeave}
+          onMouseOver={() => onMouseOver(index)}
         >
           <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center font-bold text-xs">
             <Image
