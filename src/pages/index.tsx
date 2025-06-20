@@ -11,6 +11,7 @@ import UserButton from "../components/UserButton";
 import TokenAllocationCard from "../components/TokenAllocationCard";
 import DonutChart from "../components/DonutChart";
 import { tokenAddressToName, tokenNameToColor } from "../constants/contract/ERC20Contracts";
+import ProposalModal from "../components/ProposalModal";
 
 interface TokenInformation
 {
@@ -33,6 +34,8 @@ export default function Home() {
   const [mouseHoveringOnCard, setMouseHoveringOnCard] = useState<boolean>(false);
   const [colorsToHighlight, setColorsToHighlight] = useState<string[]>();
   const [donutChartText, setDonutChartText] = useState<string[]>(["Total Invested:", "$0.00"]);
+
+  const [submitProposalModalOpen, setSubmitProposalModalOpen] = useState<boolean>(false);
 
   // this use Effect will initialize the front-end
   // and query the backend frequently to update the neede values
@@ -137,7 +140,7 @@ export default function Home() {
 
           {isConnected && <UserButton width="w-40"> Redeem </UserButton>}
         </div>
-        {isConnected && <UserButton> Submit a Proposal </UserButton>}
+        {isConnected && <UserButton onClick={() => setSubmitProposalModalOpen(true)}> Submit a Proposal </UserButton>}
 
         {!isConnected && <GreeterMessage />}
 
@@ -147,6 +150,7 @@ export default function Home() {
           onMouseOver={handleMouseOverCard}
           onMouseLeave={handleMouseLeaveCardStack}
         />}
+        <ProposalModal isOpen={submitProposalModalOpen} onClose={() => setSubmitProposalModalOpen(false)} />
       </div>
     </div>
   );
