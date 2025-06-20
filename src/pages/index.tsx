@@ -12,22 +12,34 @@ import TokenAllocationCard from "../components/TokenAllocationCard";
 import DonutChart from "../components/DonutChart";
 import { tokenAddressToName, tokenNameToColor } from "../constants/ERC20Contracts";
 
+interface TokenInformation
+{
+    name: string;
+    short: string;
+    percentage: string;
+    color: string;
+    address: string;
+    holdings: string;
+    dollarValue: string;
+}
+
 export default function Home() {
 
   const { isConnected } = useAccount();
 
-  const [tokensArray, setTokensArray] = useState();
+  const [tokensArray, setTokensArray] = useState<TokenInformation[]>([]);
   // the state variables for this front-end
   const [fundTotalValue, setFundTotalValue] = useState<string>("1.00");
-  const [mouseHoveringOnCard, setMouseHoveringOnCard] = useState(false);
-  const [colorsToHighlight, setColorsToHighlight] = useState();
-  const [donutChartText, setDonutChartText] = useState(["Total Invested:", "$0.00"]);
+  const [mouseHoveringOnCard, setMouseHoveringOnCard] = useState<boolean>(false);
+  const [colorsToHighlight, setColorsToHighlight] = useState<string[]>();
+  const [donutChartText, setDonutChartText] = useState<string[]>(["Total Invested:", "$0.00"]);
 
   // this use Effect will initialize the front-end
   // and query the backend frequently to update the neede values
   useEffect(() =>
   {
     // The initialize function which runs only once
+    let tokens: TokenInformation[] = [];
     async function init()
     {
       
@@ -35,25 +47,8 @@ export default function Home() {
           return;
       await populateWeb3Interface();
       const totalValue = await getFundTotalValue();
-      setFundTotalValue(totalValue);
       setDonutChartText(["Total Invested:", "$" + totalValue]);
       await queryBackend();
-      setFundTotalValue(totalValue);
-      const fundAssets = await getFundAssets();
-      let tokens = [];
-      for(let i = 0; i < fundAssets.length; i++)
-      {
-          const tokenAddress = fundAssets[i][0];
-          const tokenName = tokenAddressToName.get(tokenAddress)[0];
-          const tokenShort = tokenAddressToName.get(tokenAddress)[1];
-          const tokenColor = tokenNameToColor.get(tokenName);
-          const tokenHoldings = await getERC20HoldingsInFund(tokenAddress);
-          const tokenDollarValue = await getERC20ValueInFund(fundAssets[i][0]);
-          const tokenPercentage = (Number(tokenDollarValue) / Number(totalValue) * 100).toFixed(2) + "%";
-          tokens.push({name: tokenName, short: tokenShort, percentage: tokenPercentage, color: tokenColor, address: tokenAddress,
-          holdings: tokenHoldings, value: tokenDollarValue});
-      }
-      setTokensArray(tokens);
       setColorsToHighlight(tokens.map((token) => token.color));
     };
 
@@ -64,18 +59,25 @@ export default function Home() {
       const totalValue = await getFundTotalValue();
       setFundTotalValue(totalValue);
       const fundAssets = await getFundAssets();
-      let tokens = [];
+      tokens = [];
       for(let i = 0; i < fundAssets.length; i++)
       {
           const tokenAddress = fundAssets[i][0];
-          const tokenName = tokenAddressToName.get(tokenAddress)[0];
-          const tokenShort = tokenAddressToName.get(tokenAddress)[1];
-          const tokenHoldings = await getERC20HoldingsInFund(tokenAddress);
-          const tokenColor = tokenNameToColor.get(tokenName);
+          const tokenNameData = tokenAddressToName.get(tokenAddress) ?? ["Unknown Token", "UNK"];
           const tokenDollarValue = await getERC20ValueInFund(fundAssets[i][0]);
           const tokenPercentage = (Number(tokenDollarValue) / Number(totalValue) * 100).toFixed(2) + "%";
-          tokens.push({name: tokenName, short: tokenShort, percentage: tokenPercentage, color: tokenColor, address: tokenAddress,
-          holdings: tokenHoldings, value: tokenDollarValue});
+
+          let tokenInformation: TokenInformation = {
+            name: tokenNameData[0],
+            short: tokenNameData[1],
+            percentage: tokenPercentage,
+            color: tokenNameToColor.get(tokenNameData[0]) || "#000000",
+            address: tokenAddress,
+            holdings: await getERC20HoldingsInFund(fundAssets[i][0]),
+            dollarValue: tokenDollarValue
+          };
+
+          tokens.push(tokenInformation);
       }
       setTokensArray(tokens);
 
@@ -99,7 +101,7 @@ export default function Home() {
 
     setMouseHoveringOnCard(true);
 
-    setDonutChartText([tokensArray[index].holdings + " " + tokensArray[index].short + ":", "$" + tokensArray[index].value]);
+    setDonutChartText([tokensArray[index].holdings + " " + tokensArray[index].short + ":", "$" + tokensArray[index].dollarValue]);
   };
 
   // handles the case when the mouse leaves the card
