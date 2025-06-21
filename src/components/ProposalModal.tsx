@@ -10,6 +10,8 @@ interface ProposalModalProps {
 type TokenPair = {
   from: string;
   to: string;
+  amountFrom: string;
+  amountTo: string;
 };
 
 const tokenOptions = ['ETH', 'BTC', 'USDT', 'DAI', 'MATIC'];
@@ -24,20 +26,22 @@ const tokenLogos: Record<string, string> = {
 
 export default function ProposalModal({ isOpen, onClose }: ProposalModalProps) {
   const modalRef = useRef<HTMLDivElement>(null);
-  const [tokenPairs, setTokenPairs] = useState<TokenPair[]>([{ from: 'ETH', to: 'BTC' }]);
+
+  const [tokenPairs, setTokenPairs] = useState<TokenPair[]>([
+    { from: 'ETH', to: 'BTC', amountFrom: '', amountTo: '' }
+  ]);
+
   const [justification, setJustification] = useState('');
+
+  const resetForm = () => {
+    setTokenPairs([{ from: 'ETH', to: 'BTC', amountFrom: '', amountTo: '' }]);
+    setJustification('');
+  };
 
   // Reset form when modal closes
   useEffect(() => {
-    if (!isOpen) {
-      resetForm();
-    }
+    if (!isOpen) resetForm();
   }, [isOpen]);
-
-  const resetForm = () => {
-    setTokenPairs([{ from: 'ETH', to: 'BTC' }]);
-    setJustification('');
-  };
 
   // Close modal when clicking outside
   useEffect(() => {
@@ -67,17 +71,18 @@ export default function ProposalModal({ isOpen, onClose }: ProposalModalProps) {
         >
           <motion.div
             ref={modalRef}
-            className="bg-white p-6 rounded-lg w-full max-w-md shadow-lg"
+            className="bg-white p-6 rounded-lg w-full max-w-lg shadow-lg"
             initial={{ scale: 0.8, opacity: 0, y: 50 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.8, opacity: 0, y: 50 }}
-            transition={{ type: "spring", stiffness: 300, damping: 20 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 20 }}
           >
             <h2 className="text-xl font-bold text-center mb-4">Your Proposal</h2>
 
             {/* Token Pair Selectors */}
             {tokenPairs.map((pair, index) => (
               <div key={index} className="flex items-center justify-between gap-2 mb-4">
+                {/* FROM TOKEN + AMOUNT */}
                 <div className="flex items-center gap-2 flex-1">
                   <img src={tokenLogos[pair.from]} alt={pair.from} className="w-6 h-6" />
                   <select
@@ -93,10 +98,27 @@ export default function ProposalModal({ isOpen, onClose }: ProposalModalProps) {
                       <option key={token} value={token}>{token}</option>
                     ))}
                   </select>
+                  <input
+                    type="number"
+                    min="0"
+                    step="any"
+                    className="w-20 border rounded p-2 text-sm"
+                    placeholder="Amt"
+                    value={pair.amountFrom}
+                    onChange={(e) => {
+                      const updated = [...tokenPairs];
+                      updated[index].amountFrom = e.target.value;
+                      setTokenPairs(updated);
+                    }}
+                  />
                 </div>
 
-                <span className="text-xl">&rarr;</span>
+                {/* CONDITIONAL ARROW */}
+                {pair.amountFrom === '' && (
+                  <span className="text-xl">&rarr;</span>
+                )}
 
+                {/* TO TOKEN + AMOUNT */}
                 <div className="flex items-center gap-2 flex-1">
                   <img src={tokenLogos[pair.to]} alt={pair.to} className="w-6 h-6" />
                   <select
@@ -112,8 +134,22 @@ export default function ProposalModal({ isOpen, onClose }: ProposalModalProps) {
                       <option key={token} value={token}>{token}</option>
                     ))}
                   </select>
+                  <input
+                    type="number"
+                    min="0"
+                    step="any"
+                    className="w-20 border rounded p-2 text-sm"
+                    placeholder="Amt"
+                    value={pair.amountTo}
+                    onChange={(e) => {
+                      const updated = [...tokenPairs];
+                      updated[index].amountTo = e.target.value;
+                      setTokenPairs(updated);
+                    }}
+                  />
                 </div>
 
+                {/* DELETE BUTTON */}
                 {tokenPairs.length > 1 && (
                   <button
                     onClick={() =>
@@ -128,16 +164,18 @@ export default function ProposalModal({ isOpen, onClose }: ProposalModalProps) {
               </div>
             ))}
 
-            {/* Add New Token Pair */}
+            {/* ADD BUTTON */}
             <button
               type="button"
-              onClick={() => setTokenPairs([...tokenPairs, { from: 'ETH', to: 'BTC' }])}
+              onClick={() =>
+                setTokenPairs([...tokenPairs, { from: 'ETH', to: 'BTC', amountFrom: '', amountTo: '' }])
+              }
               className="flex items-center justify-center mx-auto mb-4 w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 text-xl font-bold"
             >
               +
             </button>
 
-            {/* Justification */}
+            {/* JUSTIFICATION TEXTAREA */}
             <div className="text-center mb-4">
               <label className="block font-medium mb-1">Justification</label>
               <textarea
@@ -148,7 +186,7 @@ export default function ProposalModal({ isOpen, onClose }: ProposalModalProps) {
               />
             </div>
 
-            {/* Submit Button */}
+            {/* SUBMIT BUTTON */}
             <button
               className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600 transition"
               onClick={onClose}
