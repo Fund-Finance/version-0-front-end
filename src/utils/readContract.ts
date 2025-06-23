@@ -5,11 +5,12 @@ import { FUND_CONTROLLER_CONTRACT_ADDRESS, FUND_CONTROLLER_CONTRACT_ABI } from "
 import { ethers } from "ethers";
 import { GenericERC20ContractABI } from "../constants/contract/GenericERC20ContractABI";
 import { TokenPair } from "../types/TokenPair";
+import { FundController__factory, FundController } from "../typechain-types";
 
 interface Web3Interface {
   provider: ethers.BrowserProvider | null;
   fundTokenContract: ethers.Contract | null;
-  fundControllerContract: ethers.Contract | null;
+  fundControllerContract: FundController | null;
   erc20TokenContracts: Map<string, ethers.Contract>;
 }
 
@@ -29,11 +30,14 @@ const PopulateFundContracts = async () => {
         FUND_TOKEN_CONTRACT_ABI,
         web3Interface.provider,
     );
-    const signer = await web3Interface.provider.getSigner();
-    web3Interface.fundControllerContract = new ethers.Contract(
+    // web3Interface.fundControllerContract = new ethers.Contract(
+    //     FUND_CONTROLLER_CONTRACT_ADDRESS,
+    //     FUND_CONTROLLER_CONTRACT_ABI,
+    //     web3Interface.provider
+    // );
+    web3Interface.fundControllerContract = FundController__factory.connect(
         FUND_CONTROLLER_CONTRACT_ADDRESS,
-        FUND_CONTROLLER_CONTRACT_ABI,
-        signer,
+        web3Interface.provider
     );
 };
 
@@ -122,7 +126,7 @@ export async function getFundAssets(): Promise<string[]>
 
 export async function createProposal(addressesToTrade: string[], addressesToReceive: string[], amountsToTrade: number[]): Promise<void>
 {
-    if (!web3Interface || !web3Interface.fundControllerContract) {
+    if (!web3Interface || !web3Interface.fundControllerContract || !web3Interface.provider) {
         throw new Error("Web3 interface not initialized");
     }
     
@@ -137,7 +141,9 @@ export async function createProposal(addressesToTrade: string[], addressesToRece
 
     // Call the contract method to publish the proposal
     // const tx = await web3Interface.fundTokenContract.createProposal(
-    await web3Interface.fundControllerContract.createProposal(
+    const signer = await web3Interface.provider.getSigner();
+    await web3Interface.
+fundControllerContract.connect(signer).createProposal(
         addressesToTrade[0],
         addressesToReceive[0],
         amountToTrade_raw
