@@ -1,40 +1,28 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import React, { useEffect, useRef, useState } from 'react';
 import { Trash2 } from 'lucide-react';
+import { TokenPair } from "../types/TokenPair";
 
 interface ProposalModalProps {
   isOpen: boolean;
+  supportedTokensShort: string[]
+  supportedTokensName: string[]
+
   onClose: () => void;
+  onSubmit: (tokenPairs: TokenPair[]) => void;
 }
 
-type TokenPair = {
-  from: string;
-  to: string;
-  amountFrom: string;
-  amountTo: string;
-};
-
-const tokenOptions = ['ETH', 'BTC', 'USDT', 'DAI', 'MATIC'];
-
-const tokenLogos: Record<string, string> = {
-  ETH: 'https://cryptologos.cc/logos/ethereum-eth-logo.png',
-  BTC: 'https://cryptologos.cc/logos/bitcoin-btc-logo.png',
-  USDT: 'https://cryptologos.cc/logos/tether-usdt-logo.png',
-  DAI: 'https://cryptologos.cc/logos/multi-collateral-dai-dai-logo.png',
-  MATIC: 'https://cryptologos.cc/logos/polygon-matic-logo.png',
-};
-
-export default function ProposalModal({ isOpen, onClose }: ProposalModalProps) {
+export default function ProposalModal({ isOpen, onClose, onSubmit, supportedTokensShort, supportedTokensName }: ProposalModalProps) {
   const modalRef = useRef<HTMLDivElement>(null);
 
   const [tokenPairs, setTokenPairs] = useState<TokenPair[]>([
-    { from: 'ETH', to: 'BTC', amountFrom: '', amountTo: '' }
+    { from: 'wETH', to: 'cbBTC', amountFrom: '', amountTo: '' }
   ]);
 
   const [justification, setJustification] = useState('');
 
   const resetForm = () => {
-    setTokenPairs([{ from: 'ETH', to: 'BTC', amountFrom: '', amountTo: '' }]);
+    setTokenPairs([{ from: 'wETH', to: 'cbBTC', amountFrom: '', amountTo: '' }]);
     setJustification('');
   };
 
@@ -71,7 +59,7 @@ export default function ProposalModal({ isOpen, onClose }: ProposalModalProps) {
         >
           <motion.div
             ref={modalRef}
-            className="bg-white p-6 rounded-lg w-full max-w-lg shadow-lg"
+            className="bg-white p-6 rounded-lg w-full max-w-xl shadow-lg"
             initial={{ scale: 0.8, opacity: 0, y: 50 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.8, opacity: 0, y: 50 }}
@@ -84,7 +72,7 @@ export default function ProposalModal({ isOpen, onClose }: ProposalModalProps) {
               <div key={index} className="flex items-center justify-between gap-2 mb-4">
                 {/* FROM TOKEN + AMOUNT */}
                 <div className="flex items-center gap-2 flex-1">
-                  <img src={tokenLogos[pair.from]} alt={pair.from} className="w-6 h-6" />
+                    <img src={"/" + supportedTokensName[supportedTokensShort.indexOf(pair.from)] + ".png"} alt={pair.from} className="w-6 h-6" />
                   <select
                     className="border rounded p-2 flex-1"
                     value={pair.from}
@@ -94,7 +82,7 @@ export default function ProposalModal({ isOpen, onClose }: ProposalModalProps) {
                       setTokenPairs(updated);
                     }}
                   >
-                    {tokenOptions.map(token => (
+                    {supportedTokensShort.map(token => (
                       <option key={token} value={token}>{token}</option>
                     ))}
                   </select>
@@ -119,7 +107,7 @@ export default function ProposalModal({ isOpen, onClose }: ProposalModalProps) {
 
                 {/* TO TOKEN + AMOUNT */}
                 <div className="flex items-center gap-2 flex-1">
-                  <img src={tokenLogos[pair.to]} alt={pair.to} className="w-6 h-6" />
+                  <img src={"/" + supportedTokensName[supportedTokensShort.indexOf(pair.to)] + ".png"} alt={pair.to} className="w-6 h-6" />
                   <select
                     className="border rounded p-2 flex-1"
                     value={pair.to}
@@ -129,7 +117,7 @@ export default function ProposalModal({ isOpen, onClose }: ProposalModalProps) {
                       setTokenPairs(updated);
                     }}
                   >
-                    {tokenOptions.map(token => (
+                    {supportedTokensShort.map(token => (
                       <option key={token} value={token}>{token}</option>
                     ))}
                   </select>
@@ -167,7 +155,7 @@ export default function ProposalModal({ isOpen, onClose }: ProposalModalProps) {
             <button
               type="button"
               onClick={() =>
-                setTokenPairs([...tokenPairs, { from: 'ETH', to: 'BTC', amountFrom: '', amountTo: '' }])
+                setTokenPairs([...tokenPairs, { from: 'wETH', to: 'cbBTC', amountFrom: '', amountTo: '' }])
               }
               className="flex items-center justify-center mx-auto mb-4 w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 text-xl font-bold"
             >
@@ -188,7 +176,7 @@ export default function ProposalModal({ isOpen, onClose }: ProposalModalProps) {
             {/* SUBMIT BUTTON */}
             <button
               className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600 transition"
-              onClick={onClose}
+              onClick={() => onSubmit(tokenPairs)}
             >
               Submit
             </button>

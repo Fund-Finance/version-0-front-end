@@ -12,6 +12,7 @@ import TokenAllocationCard from "../components/TokenAllocationCard";
 import DonutChart from "../components/DonutChart";
 import { tokenAddressToName, tokenNameToColor } from "../constants/contract/ERC20Contracts";
 import ProposalModal from "../components/ProposalModal";
+import { TokenPair } from "../types/TokenPair";
 
 interface TokenInformation
 {
@@ -116,6 +117,14 @@ export default function Home() {
     setColorsToHighlight(colors);
   };
 
+  const handleSubmitProposal = async (proposalData: TokenPair[]) => 
+  {
+      // close the proposal window
+      setSubmitProposalModalOpen(false);
+      console.log("handle proposal called!");
+      console.log("proposalData: ", proposalData);
+  }
+
   return (
     <div className="min-h-screen bg-gray-100 p-4 font-sans">
       {/* Header */}
@@ -150,7 +159,9 @@ export default function Home() {
           onMouseOver={handleMouseOverCard}
           onMouseLeave={handleMouseLeaveCardStack}
         />}
-        <ProposalModal isOpen={submitProposalModalOpen} onClose={() => setSubmitProposalModalOpen(false)} />
+        <ProposalModal isOpen={submitProposalModalOpen} onClose={() => setSubmitProposalModalOpen(false)}
+        onSubmit={handleSubmitProposal}
+        supportedTokensName={tokensArray.map(token => token.name)} supportedTokensShort={tokensArray.map(token => token.short)}/>
       </div>
     </div>
   );
