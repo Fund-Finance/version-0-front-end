@@ -1,8 +1,10 @@
 "use client";
 
 import { FUND_TOKEN_CONTRACT_ADDRESS, FUND_TOKEN_CONTRACT_ABI } from "../constants/contract/FundTokenContract";
+import { FUND_CONTROLLER_CONTRACT_ADDRESS, FUND_CONTROLLER_CONTRACT_ABI } from "../constants/contract/FundControllerContract";
 import { ethers } from "ethers";
 import { GenericERC20ContractABI } from "../constants/contract/GenericERC20ContractABI";
+import { TokenPair } from "../types/TokenPair";
 
 interface Web3Interface {
   provider: ethers.BrowserProvider | null;
@@ -22,11 +24,17 @@ const PopulateFundContracts = async () => {
   if (!web3Interface.provider)
       throw new Error("Provider not initialized");
 
-  web3Interface.fundTokenContract = new ethers.Contract(
-    FUND_TOKEN_CONTRACT_ADDRESS,
-    FUND_TOKEN_CONTRACT_ABI,
-    web3Interface.provider,
-  );
+    web3Interface.fundTokenContract = new ethers.Contract(
+        FUND_TOKEN_CONTRACT_ADDRESS,
+        FUND_TOKEN_CONTRACT_ABI,
+        web3Interface.provider,
+    );
+    const signer = await web3Interface.provider.getSigner();
+    web3Interface.fundControllerContract = new ethers.Contract(
+        FUND_CONTROLLER_CONTRACT_ADDRESS,
+        FUND_CONTROLLER_CONTRACT_ABI,
+        signer,
+    );
 };
 
 const PopulateERC20Contracts = async (addressList: string[]) => {
@@ -110,4 +118,30 @@ export async function getFundAssets(): Promise<string[]>
         return [];
     const assets = await web3Interface.fundTokenContract.getAssets();
     return assets;
+}
+
+export async function createProposal(addressesToTrade: string[], addressesToReceive: string[], amountsToTrade: number[]): Promise<void>
+{
+    if (!web3Interface || !web3Interface.fundControllerContract) {
+        throw new Error("Web3 interface not initialized");
+    }
+    
+
+    console.log("Creating proposal with the following data:");
+    console.log("Addresses to trade:", addressesToTrade[0]);
+    console.log("Addresses to receive:", addressesToReceive[0]);
+    console.log("Amounts to trade:", amountsToTrade[0]);
+
+    const amountToTrade_raw =
+        BigInt(amountsToTrade[0]) * (10n ** 18n); 
+
+    // Call the contract method to publish the proposal
+    // const tx = await web3Interface.fundTokenContract.createProposal(
+    await web3Interface.fundControllerContract.createProposal(
+        addressesToTrade[0],
+        addressesToReceive[0],
+        amountToTrade_raw
+    );
+    
+    // await tx.wait(); // Wait for transaction confirmation
 }

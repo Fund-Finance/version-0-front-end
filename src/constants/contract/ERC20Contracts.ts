@@ -14,3 +14,9 @@ export const tokenNameToColor: Map<string, string> = new Map([
     ["Wrapped Ethereum", "#6F00FF"],
     ["Coinbase Bitcoin", "#F7931A"]
 ]);
+
+export const tokenShortToAddress: Map<string, string> = new Map([
+    ["USDC", usdcAddress],
+    ["wETH", wethAddress],
+    ["cbBTC", cbBTCAddress]
+]);

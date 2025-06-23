@@ -1,16 +1,14 @@
-"use client";
-
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useState, useEffect } from "react";
 import { useAccount } from "wagmi";
-import { getFundTotalValue, getFundAssets, getERC20HoldingsInFund, populateWeb3Interface, getERC20ValueInFund } from "../utils/readContract";
+import { getFundTotalValue, getFundAssets, getERC20HoldingsInFund, populateWeb3Interface, getERC20ValueInFund, createProposal } from "../utils/readContract";
 
 import GreeterMessage from "../components/GreeterMessage";
 import UserButton from "../components/UserButton";
 
 import TokenAllocationCard from "../components/TokenAllocationCard";
 import DonutChart from "../components/DonutChart";
-import { tokenAddressToName, tokenNameToColor } from "../constants/contract/ERC20Contracts";
+import { tokenAddressToName, tokenNameToColor, tokenShortToAddress } from "../constants/contract/ERC20Contracts";
 import ProposalModal from "../components/ProposalModal";
 import { TokenPair } from "../types/TokenPair";
 
@@ -121,8 +119,26 @@ export default function Home() {
   {
       // close the proposal window
       setSubmitProposalModalOpen(false);
-      console.log("handle proposal called!");
-      console.log("proposalData: ", proposalData);
+      const assetsToTrade_shorts: string[] = proposalData.map(pair => pair.from);
+      const assetsToReceive_shorts: string[] = proposalData.map(pair => pair.to);
+      const amountsToTrade: number[] = proposalData.map(pair => Number(pair.amountFrom));
+
+      const addressesToTrade: string[] = assetsToTrade_shorts.map(short => {
+          const address = tokenShortToAddress.get(short);
+          if (!address) {
+              throw new Error(`Token short ${short} does not have a valid address.`);
+          }
+          return address;
+      });
+      const addressesToReceive: string[] = assetsToReceive_shorts.map(short => {
+          const address = tokenShortToAddress.get(short);
+          if (!address) {
+              throw new Error(`Token short ${short} does not have a valid address.`);
+          }
+          return address;
+      });
+
+      createProposal(addressesToTrade, addressesToReceive, amountsToTrade);
   }
 
   return (
