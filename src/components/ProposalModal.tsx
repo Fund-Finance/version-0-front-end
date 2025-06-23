@@ -98,19 +98,18 @@ export default function ProposalModal({ isOpen, onClose }: ProposalModalProps) {
                       <option key={token} value={token}>{token}</option>
                     ))}
                   </select>
-                  <input
-                    type="number"
-                    min="0"
-                    step="any"
-                    className="w-20 border rounded p-2 text-sm"
-                    placeholder="Amt"
-                    value={pair.amountFrom}
-                    onChange={(e) => {
-                      const updated = [...tokenPairs];
-                      updated[index].amountFrom = e.target.value;
-                      setTokenPairs(updated);
-                    }}
-                  />
+                <input
+                  type="text"
+                  inputMode="decimal"
+                  className="w-24 border rounded p-2 text-sm"
+                  placeholder="Amount"
+                  value={pair.amountFrom}
+                  onChange={(e) => {
+                    const updated = [...tokenPairs];
+                    updated[index].amountFrom = e.target.value;
+                    setTokenPairs(updated);
+                  }}
+                />
                 </div>
 
                 {/* CONDITIONAL ARROW */}
@@ -134,19 +133,19 @@ export default function ProposalModal({ isOpen, onClose }: ProposalModalProps) {
                       <option key={token} value={token}>{token}</option>
                     ))}
                   </select>
-                  <input
-                    type="number"
-                    min="0"
-                    step="any"
-                    className="w-20 border rounded p-2 text-sm"
-                    placeholder="Amt"
-                    value={pair.amountTo}
-                    onChange={(e) => {
-                      const updated = [...tokenPairs];
-                      updated[index].amountTo = e.target.value;
-                      setTokenPairs(updated);
-                    }}
-                  />
+
+                <input
+                  type="text"
+                  inputMode="decimal"
+                  className="w-24 border rounded p-2 text-sm"
+                  placeholder="Amount"
+                  value={pair.amountTo}
+                  onChange={(e) => {
+                    const updated = [...tokenPairs];
+                    updated[index].amountTo = e.target.value;
+                    setTokenPairs(updated);
+                  }}
+                />
                 </div>
 
                 {/* DELETE BUTTON */}
