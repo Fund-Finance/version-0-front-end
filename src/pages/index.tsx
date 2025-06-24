@@ -3,14 +3,15 @@ import { useState, useEffect } from "react";
 import { useAccount } from "wagmi";
 import { getFundTotalValue, getFundAssets,
     getERC20HoldingsInFund, populateWeb3Interface,
-    getERC20ValueInFund, createProposal } from "../utils/Web3Interface";
+    getERC20ValueInFund, createProposal, getFundAssetAggregators,
+    getAggregatorPrice, getFTokenTotalSupply } from "../utils/Web3Interface";
 
 import GreeterMessage from "../components/GreeterMessage";
 import UserButton from "../components/UserButton";
 
 import TokenAllocationCard from "../components/TokenAllocationCard";
 import DonutChart from "../components/DonutChart";
-import { tokenAddressToName, tokenNameToColor, tokenShortToAddress } from "../constants/contract/ERC20Contracts";
+import { tokenAddressToName, tokenNameToColor, tokenShortToAddress, usdcPriceAggregatorAddress } from "../constants/contract/ERC20Contracts";
 import ProposalModal from "../components/ProposalModal";
 import { TokenPair } from "../types/TokenPair";
 import ContributeModal from '../components/ContributeModule';
@@ -33,6 +34,8 @@ export default function Home() {
   const [tokensArray, setTokensArray] = useState<TokenInformation[]>([]);
   // the state variables for this front-end
   const [fundTotalValue, setFundTotalValue] = useState<string>("1.00");
+  const [fTokenTotalSupply, setFTokenTotalSupply] = useState<string>("1.00");
+  const [usdcPrice, setUsdcPrice] = useState<string>("10.00");
   const [mouseHoveringOnCard, setMouseHoveringOnCard] = useState<boolean>(false);
   const [colorsToHighlight, setColorsToHighlight] = useState<string[]>();
   const [donutChartText, setDonutChartText] = useState<string[]>(["Total Invested:", "$0.00"]);
@@ -63,6 +66,10 @@ export default function Home() {
     // run at a set interval
     async function queryBackend()
     {
+      const fTokenTotalSupply = await getFTokenTotalSupply();
+      setFTokenTotalSupply(fTokenTotalSupply);
+      const usdcPrice = await getAggregatorPrice(usdcPriceAggregatorAddress);
+      setUsdcPrice(usdcPrice);
       const totalValue = await getFundTotalValue();
       setFundTotalValue(totalValue);
       const fundAssets = await getFundAssets();
@@ -184,9 +191,12 @@ export default function Home() {
         <ProposalModal isOpen={submitProposalModalOpen} onClose={() => setSubmitProposalModalOpen(false)}
         onSubmit={handleSubmitProposal}
         supportedTokensName={tokensArray.map(token => token.name)} supportedTokensShort={tokensArray.map(token => token.short)}/>
-      <ContributeModal
+        <ContributeModal
         isOpen={contributeOpen}
         onClose={() => setContributeOpen(false)}
+        usdcPrice={Number(usdcPrice)}
+        fTokenTotalSupply={Number(fTokenTotalSupply)}
+        fundTotalValue={Number(fundTotalValue)}
       />
       </div>
     </div>

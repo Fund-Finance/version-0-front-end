@@ -1,12 +1,17 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import React, { useEffect, useRef, useState } from 'react';
+import { getFundTotalValue, getFTokenTotalSupply, getAggregatorPrice } from '../utils/Web3Interface';
+import { usdcPriceAggregatorAddress } from '../constants/contract/ERC20Contracts';
 
 interface ContributeModalProps {
+  usdcPrice: number;
+  fundTotalValue: number;
+  fTokenTotalSupply: number;
   isOpen: boolean;
   onClose: () => void;
 }
 
-export default function ContributeModal({ isOpen, onClose }: ContributeModalProps) {
+export default function ContributeModal({ isOpen, onClose, usdcPrice, fundTotalValue, fTokenTotalSupply }: ContributeModalProps) {
   const modalRef = useRef<HTMLDivElement>(null);
   const [amount, setAmount] = useState('');
 
@@ -18,6 +23,17 @@ export default function ContributeModal({ isOpen, onClose }: ContributeModalProp
   useEffect(() => {
     if (!isOpen) resetForm();
   }, [isOpen]);
+  // let usdcPrice = getAggregatorPrice(usdcPriceAggregatorAddress);
+  // let fundTotalValue = getFundTotalValue();
+  // let fTokenTotalSupply = getFTokenTotalSupply();
+  //
+  const preCalculation = (usdcPrice * fTokenTotalSupply) / fundTotalValue;
+  console.log("Usdc price: ", usdcPrice);
+  console.log("Fund total value: ", fundTotalValue);
+  console.log("fToken total supply: ", fTokenTotalSupply);
+
+  console.log("Pre-calculation factor: ", preCalculation);
+
 
   // Click outside to close
   useEffect(() => {
@@ -37,7 +53,7 @@ export default function ContributeModal({ isOpen, onClose }: ContributeModalProp
   }, [isOpen, onClose]);
 
   // Calculate 2x return
-  const calculatedReturn = amount ? (parseFloat(amount) * 2).toFixed(2) : '';
+  const calculatedReturn = (amount ? (parseFloat(amount) * 2).toFixed(2) : '');
 
   return (
     <AnimatePresence>
@@ -94,7 +110,7 @@ export default function ContributeModal({ isOpen, onClose }: ContributeModalProp
         placeholder="fTokens!"
         className="w-full border rounded p-2 bg-gray-100 text-center"
         readOnly
-        value={calculatedReturn ? `${calculatedReturn} fTokens` : ''}
+        value={amount ? `~${(parseFloat(amount) * preCalculation).toFixed(2)} fTokens` : ''}
       />
     <div className="w-6" />
     </div>

@@ -4,6 +4,7 @@ import { FUND_TOKEN_CONTRACT_ADDRESS } from "../constants/contract/FundTokenCont
 import { FUND_CONTROLLER_CONTRACT_ADDRESS } from "../constants/contract/FundControllerContract";
 import { ethers } from "ethers";
 import { GenericERC20ContractABI } from "../constants/contract/GenericERC20ContractABI";
+import { GenericChainlinkAggregator } from "../constants/contract/GenericChainlinkAggregator";
 import { FundController__factory, FundController } from "../typechain-types";
 import { FundToken__factory, FundToken } from "../typechain-types";
 
@@ -12,6 +13,7 @@ interface Web3Interface {
   fundTokenContract: FundToken | null;
   fundControllerContract: FundController | null;
   erc20TokenContracts: Map<string, ethers.Contract>;
+  aggregatorContracts: Map<string, ethers.Contract>;
 }
 
 // global variable for interfacing with the blockchain backend
@@ -25,18 +27,23 @@ export async function populateWeb3Interface() {
     fundTokenContract: null,
     fundControllerContract: null,
     erc20TokenContracts: new Map<string, ethers.Contract>([]),
+    aggregatorContracts: new Map<string, ethers.Contract>([]),
   };
   await PopulateProvider();
   await PopulateFundContracts();
 
   const fundAssetList = await getFundAssets();
+  const fundAssetAggregatorList = await getFundAssetAggregators();
   let fundAssetAddresses: string[] = [];
+  let fundAssetAggregators: string[] = [];
   for (let i = 0; i < fundAssetList.length; i++)
   {
     fundAssetAddresses.push(fundAssetList[i]);
+    fundAssetAggregators.push(fundAssetAggregatorList[i]);
   }
 
   await PopulateERC20Contracts(fundAssetAddresses);
+  await PopulateAggregatorContracts(fundAssetAggregators);
 }
 
 const PopulateProvider = async () => {
@@ -58,7 +65,6 @@ const PopulateFundContracts = async () => {
     );
 };
 
-/******************** General ERC20 Functions ********************/
 
 const PopulateERC20Contracts = async (addressList: string[]) => {
     if (!web3Interface.provider)
@@ -76,6 +82,24 @@ const PopulateERC20Contracts = async (addressList: string[]) => {
         );
     }
 }
+
+const PopulateAggregatorContracts = async (addressList: string[]) => {
+    if (!web3Interface.provider)
+        throw new Error("Provider not initialized");
+
+    for (let i = 0; i < addressList.length; i++) {
+        web3Interface.aggregatorContracts.set(
+            addressList[i],
+            new ethers.Contract(
+                addressList[i],
+                GenericChainlinkAggregator,
+                web3Interface.provider,
+            )
+        );
+    }
+}
+
+/******************** General ERC20 Functions ********************/
 
 // gets the amount of an ERC20 token in the fund given the address as an input
 export async function getERC20HoldingsInFund (address: string): Promise<string>
@@ -106,6 +130,26 @@ export async function getERC20ValueInFund (address: string): Promise<string>
     return result.toString();
 }
 
+/******************** Aggregator Functions ********************/
+export async function getAggregatorPrice(address: string): Promise<string>
+{
+    if (!web3Interface || !web3Interface.aggregatorContracts.has(address))
+        return "0.00";
+   
+    const contract = web3Interface.aggregatorContracts.get(address);
+    if (!contract) return "10.10";
+
+    try {
+        const latestRoundData = await contract.latestRoundData();
+        let result = Number(latestRoundData.answer) / (10 ** Number(await contract.decimals()));
+        // result = Math.round(result * 100) / 100; // round to 2 decimal places
+        return result.toString();
+    } catch (error) {
+        console.error("Error fetching price from aggregator:", error);
+        return "0.00";
+    }
+}
+
 /******************** Fund Functions ********************/
 
 export async function getFundTotalValue(): Promise<string>
@@ -119,6 +163,17 @@ export async function getFundTotalValue(): Promise<string>
     return result.toString();
 }
 
+export async function getFTokenTotalSupply(): Promise<string>
+{
+    if (!web3Interface || !web3Interface.fundTokenContract)
+        return "0.00";
+    let result =
+        Number(await web3Interface.fundTokenContract.totalSupply()) /
+        (10 ** 18);
+    result = Math.round(result * 100) / 100; // round to 2 decimal places
+    return result.toString();
+}
+
 // returns the list of the asset token addresses in the fund
 export async function getFundAssets(): Promise<string[]>
 {
@@ -126,9 +181,17 @@ export async function getFundAssets(): Promise<string[]>
         return [];
     const assetsStruct = await web3Interface.fundTokenContract.getAssets();
     const assets: string[] = assetsStruct.map((asset) => asset[0]); // Extracting only the addresses
-    console.log(assets)
     return assets;
 
+}
+
+export async function getFundAssetAggregators(): Promise<string[]>
+{
+    if (!web3Interface || !web3Interface.fundTokenContract)
+        return [];
+    const assetsStruct = await web3Interface.fundTokenContract.getAssets();
+    const aggregators: string[] = assetsStruct.map((asset) => asset[1]); // Extracting only the aggregator addresses
+    return aggregators;
 }
 
 export async function createProposal(addressesToTrade: string[], addressesToReceive: string[], amountsToTrade: number[]): Promise<void>
