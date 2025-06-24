@@ -14,15 +14,19 @@ interface ProposalModalProps {
 
 export default function ProposalModal({ isOpen, onClose, onSubmit, supportedTokensShort, supportedTokensName }: ProposalModalProps) {
   const modalRef = useRef<HTMLDivElement>(null);
+  const initialFromToken = 'wETH';
+  const initialToToken = 'cbBTC';
 
+  // the state variable for the token pairs to keep track of the tokens
+  // the user selects for the proposal
   const [tokenPairs, setTokenPairs] = useState<TokenPair[]>([
-    { from: 'wETH', to: 'cbBTC', amountFrom: '', amountTo: '' }
+    { from: initialFromToken, to: initialToToken, amountFrom: '', amountTo: '' }
   ]);
 
   const [justification, setJustification] = useState('');
 
   const resetForm = () => {
-    setTokenPairs([{ from: 'wETH', to: 'cbBTC', amountFrom: '', amountTo: '' }]);
+    setTokenPairs([{ from: initialFromToken, to: initialToToken, amountFrom: '', amountTo: '' }]);
     setJustification('');
   };
 
@@ -73,6 +77,7 @@ export default function ProposalModal({ isOpen, onClose, onSubmit, supportedToke
                 {/* FROM TOKEN + AMOUNT */}
                 <div className="flex items-center gap-2 flex-1">
                     <img src={"/" + supportedTokensName[supportedTokensShort.indexOf(pair.from)] + ".png"} alt={pair.from} className="w-6 h-6" />
+                  {/* FROM TOKEN SELECTOR */}
                   <select
                     className="border rounded p-2 flex-1"
                     value={pair.from}
@@ -86,6 +91,7 @@ export default function ProposalModal({ isOpen, onClose, onSubmit, supportedToke
                       <option key={token} value={token}>{token}</option>
                     ))}
                   </select>
+                {/* FROM TOKEN AMOUNT INPUT */}
                 <input
                   type="text"
                   inputMode="decimal"
@@ -108,6 +114,7 @@ export default function ProposalModal({ isOpen, onClose, onSubmit, supportedToke
                 {/* TO TOKEN + AMOUNT */}
                 <div className="flex items-center gap-2 flex-1">
                   <img src={"/" + supportedTokensName[supportedTokensShort.indexOf(pair.to)] + ".png"} alt={pair.to} className="w-6 h-6" />
+                  {/* TO TOKEN SELECTOR */}
                   <select
                     className="border rounded p-2 flex-1"
                     value={pair.to}
@@ -121,7 +128,7 @@ export default function ProposalModal({ isOpen, onClose, onSubmit, supportedToke
                       <option key={token} value={token}>{token}</option>
                     ))}
                   </select>
-
+                {/* TO TOKEN AMOUNT INPUT */}
                 <input
                   type="text"
                   inputMode="decimal"
@@ -151,11 +158,11 @@ export default function ProposalModal({ isOpen, onClose, onSubmit, supportedToke
               </div>
             ))}
 
-            {/* ADD BUTTON */}
+            {/* ADD (+) BUTTON */}
             <button
               type="button"
               onClick={() =>
-                setTokenPairs([...tokenPairs, { from: 'wETH', to: 'cbBTC', amountFrom: '', amountTo: '' }])
+                setTokenPairs([...tokenPairs, { from: initialFromToken, to: initialToToken, amountFrom: '', amountTo: '' }])
               }
               className="flex items-center justify-center mx-auto mb-4 w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 text-xl font-bold"
             >

@@ -1,7 +1,9 @@
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useState, useEffect } from "react";
 import { useAccount } from "wagmi";
-import { getFundTotalValue, getFundAssets, getERC20HoldingsInFund, populateWeb3Interface, getERC20ValueInFund, createProposal } from "../utils/readContract";
+import { getFundTotalValue, getFundAssets,
+    getERC20HoldingsInFund, populateWeb3Interface,
+    getERC20ValueInFund, createProposal } from "../utils/Web3Interface";
 
 import GreeterMessage from "../components/GreeterMessage";
 import UserButton from "../components/UserButton";
@@ -64,9 +66,9 @@ export default function Home() {
       tokens = [];
       for(let i = 0; i < fundAssets.length; i++)
       {
-          const tokenAddress = fundAssets[i][0];
+          const tokenAddress = fundAssets[i];
           const tokenNameData = tokenAddressToName.get(tokenAddress) ?? ["Unknown Token", "UNK"];
-          const tokenDollarValue = await getERC20ValueInFund(fundAssets[i][0]);
+          const tokenDollarValue = await getERC20ValueInFund(fundAssets[i]);
           const tokenPercentage = (Number(tokenDollarValue) / Number(totalValue) * 100).toFixed(2) + "%";
 
           let tokenInformation: TokenInformation = {
@@ -75,7 +77,7 @@ export default function Home() {
             percentage: tokenPercentage,
             color: tokenNameToColor.get(tokenNameData[0]) || "#000000",
             address: tokenAddress,
-            holdings: await getERC20HoldingsInFund(fundAssets[i][0]),
+            holdings: await getERC20HoldingsInFund(fundAssets[i]),
             dollarValue: tokenDollarValue
           };
 
