@@ -39,7 +39,9 @@ export default function Home() {
   const [usdcPrice, setUsdcPrice] = useState<string>("10.00");
   const [mouseHoveringOnCard, setMouseHoveringOnCard] = useState<boolean>(false);
   const [colorsToHighlight, setColorsToHighlight] = useState<string[]>();
-  const [donutChartText, setDonutChartText] = useState<string[]>(["Total Invested:", "$0.00"]);
+
+  // the text of the donut chart when hovering over a card
+  const [donutChartHoverOnCardText, setDonutChartHoverOnCardText] = useState<string[]>(["Total Invested:", "$0.00"]);
 
   const [submitProposalModalOpen, setSubmitProposalModalOpen] = useState<boolean>(false);
   const [contributeOpen, setContributeOpen] = useState(false);
@@ -50,7 +52,6 @@ export default function Home() {
   useEffect(() =>
   {
     // The initialize function which runs only once
-    let tokens: TokenInformation[] = [];
     async function init()
     {
       
@@ -58,8 +59,8 @@ export default function Home() {
           return;
       await populateWeb3Interface();
       const totalValue = await getFundTotalValue();
-      setDonutChartText(["Total Invested:", "$" + totalValue]);
-      await queryBackend();
+      setFundTotalValue(totalValue);
+      let tokens = await queryBackend();
       setColorsToHighlight(tokens.map((token) => token.color));
     };
 
@@ -74,7 +75,7 @@ export default function Home() {
       const totalValue = await getFundTotalValue();
       setFundTotalValue(totalValue);
       const fundAssets = await getFundAssets();
-      tokens = [];
+      let tokens = [];
       for(let i = 0; i < fundAssets.length; i++)
       {
           const tokenAddress = fundAssets[i];
@@ -95,7 +96,8 @@ export default function Home() {
           tokens.push(tokenInformation);
       }
       setTokensArray(tokens);
-      // setDonutChartText(["Total Invested:", "$" + totalValue]);
+
+      return tokens;
 
     }
     init();
@@ -117,13 +119,11 @@ export default function Home() {
 
     setMouseHoveringOnCard(true);
 
-    setDonutChartText([tokensArray[index].holdings + " " + tokensArray[index].short + ":", "$" + tokensArray[index].dollarValue]);
+    setDonutChartHoverOnCardText([tokensArray[index].holdings + " " + tokensArray[index].short + ":", "$" + tokensArray[index].dollarValue]);
   };
 
   // handles the case when the mouse leaves the card
   const handleMouseLeaveCardStack = () => {
-    let donutChartText = ["Total Invested:", "$" + fundTotalValue];
-    setDonutChartText(donutChartText);
     setMouseHoveringOnCard(false);
     let colors = tokensArray.map((token) => token.color); // reset to original colors
     setColorsToHighlight(colors);
@@ -180,7 +180,7 @@ export default function Home() {
               color: colorsToHighlight[tokensArray.indexOf(token)],
             }))}
             customHover={mouseHoveringOnCard}
-            lines={donutChartText}
+            lines={mouseHoveringOnCard ? [donutChartHoverOnCardText[0], donutChartHoverOnCardText[1]] : ["Total Invested:", "$" + fundTotalValue]}
           />}
 
           {isConnected && <UserButton width="w-40"> Redeem </UserButton>}
