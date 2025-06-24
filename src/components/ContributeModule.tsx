@@ -58,34 +58,56 @@ export default function ContributeModal({ isOpen, onClose }: ContributeModalProp
           >
             <h2 className="text-xl font-bold text-center mb-4">Contribute</h2>
 
-            <div className="mb-4 text-center">
-              <label className="block font-medium mb-1">Amount to Contribute (USDC)</label>
-              <input
-                type="text"
-                inputMode="decimal"
-                className="w-full border rounded p-2"
-                placeholder="Enter USDC amount"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-              />
-            </div>
+        <div className="flex-1 text-center mb-4">
+          <label className="block font-medium mb-1">Amount to Contribute (USDC)</label>
+          <div className="flex items-center justify-center gap-2">
+            <img
+              src="/United States Dollar Coin.png"
+              alt="USDC"
+              className="w-6 h-6"
+            />
+            <input
+              type="text"
+              inputMode="decimal"
+              className="w-full border rounded p-2 text-center"
+              placeholder="Enter USDC amount"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+            />
+            <div className="w-6" />
+          </div>
+        </div>
 
-            <div className="mb-4 text-center">
-              <label className="block font-medium mb-1">You Will Receive</label>
-              <input
-                type="text"
-                className="w-full border rounded p-2 bg-gray-100"
-                readOnly
-                value={calculatedReturn ? `${calculatedReturn} tokens` : ''}
-              />
-            </div>
+<div className="flex-1 mb-6 text-center">
+      <label className="block font-medium mb-1">You Will Receive</label>
+  <div className="flex items-center justify-center gap-2">
+    {/* Ethereum Icon */}
+    <img
+      src="/fToken.png"
+      alt="fToken"
+      className="w-6 h-6"
+    />
 
+    {/* Input + Label grouped */}
+      <input
+        type="text"
+        placeholder="fTokens!"
+        className="w-full border rounded p-2 bg-gray-100 text-center"
+        readOnly
+        value={calculatedReturn ? `${calculatedReturn} fTokens` : ''}
+      />
+    <div className="w-6" />
+    </div>
+</div>
+
+            <div className="flex items-center justify-between">
             <button
               className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600 transition"
               onClick={onClose}
             >
               Contribute
             </button>
+            </div>
           </motion.div>
         </motion.div>
       )}
