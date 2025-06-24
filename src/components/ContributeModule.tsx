@@ -8,10 +8,11 @@ interface ContributeModalProps {
   fundTotalValue: number;
   fTokenTotalSupply: number;
   isOpen: boolean;
+  onSubmit?: (amount: number) => void;
   onClose: () => void;
 }
 
-export default function ContributeModal({ isOpen, onClose, usdcPrice, fundTotalValue, fTokenTotalSupply }: ContributeModalProps) {
+export default function ContributeModal({ isOpen, onClose, onSubmit, usdcPrice, fundTotalValue, fTokenTotalSupply }: ContributeModalProps) {
   const modalRef = useRef<HTMLDivElement>(null);
   const [amount, setAmount] = useState('');
 
@@ -28,12 +29,6 @@ export default function ContributeModal({ isOpen, onClose, usdcPrice, fundTotalV
   // let fTokenTotalSupply = getFTokenTotalSupply();
   //
   const preCalculation = (usdcPrice * fTokenTotalSupply) / fundTotalValue;
-  console.log("Usdc price: ", usdcPrice);
-  console.log("Fund total value: ", fundTotalValue);
-  console.log("fToken total supply: ", fTokenTotalSupply);
-
-  console.log("Pre-calculation factor: ", preCalculation);
-
 
   // Click outside to close
   useEffect(() => {
@@ -119,7 +114,7 @@ export default function ContributeModal({ isOpen, onClose, usdcPrice, fundTotalV
             <div className="flex items-center justify-between">
             <button
               className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600 transition"
-              onClick={onClose}
+              onClick={onSubmit ? () => onSubmit(parseFloat(amount)) : undefined}
             >
               Contribute
             </button>

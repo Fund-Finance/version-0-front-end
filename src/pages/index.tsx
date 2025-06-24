@@ -4,7 +4,8 @@ import { useAccount } from "wagmi";
 import { getFundTotalValue, getFundAssets,
     getERC20HoldingsInFund, populateWeb3Interface,
     getERC20ValueInFund, createProposal, getFundAssetAggregators,
-    getAggregatorPrice, getFTokenTotalSupply } from "../utils/Web3Interface";
+    getAggregatorPrice, getFTokenTotalSupply,
+    contributeUsingStableCoin } from "../utils/Web3Interface";
 
 import GreeterMessage from "../components/GreeterMessage";
 import UserButton from "../components/UserButton";
@@ -94,6 +95,7 @@ export default function Home() {
           tokens.push(tokenInformation);
       }
       setTokensArray(tokens);
+      // setDonutChartText(["Total Invested:", "$" + totalValue]);
 
     }
     init();
@@ -153,6 +155,11 @@ export default function Home() {
       createProposal(addressesToTrade, addressesToReceive, amountsToTrade);
   }
 
+  const handleContributeToFund = async (amount: number) => {
+      setContributeOpen(false);
+      contributeUsingStableCoin(amount);
+  }
+
   return (
     <div className="min-h-screen bg-gray-100 p-4 font-sans">
       {/* Header */}
@@ -197,6 +204,7 @@ export default function Home() {
         usdcPrice={Number(usdcPrice)}
         fTokenTotalSupply={Number(fTokenTotalSupply)}
         fundTotalValue={Number(fundTotalValue)}
+        onSubmit={handleContributeToFund}
       />
       </div>
     </div>

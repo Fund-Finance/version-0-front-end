@@ -194,6 +194,23 @@ export async function getFundAssetAggregators(): Promise<string[]>
     return aggregators;
 }
 
+export async function contributeUsingStableCoin(amount:number)
+{
+    if (!web3Interface || !web3Interface.fundControllerContract || !web3Interface.provider) {
+        throw new Error("Web3 interface not initialized");
+    }
+
+    // USDC uses 6 decimals
+    const amount_raw = BigInt(amount) * (10n ** 6n); // Convert to raw amount
+    console.log("Contributing amount (raw):", amount_raw.toString());
+
+    // get the signer to sign the transaction
+    const signer = await web3Interface.provider.getSigner();
+    await web3Interface.fundControllerContract.connect(signer).issueUsingStableCoin(
+        amount_raw
+    );
+}
+
 export async function createProposal(addressesToTrade: string[], addressesToReceive: string[], amountsToTrade: number[]): Promise<void>
 {
     if (!web3Interface || !web3Interface.fundControllerContract || !web3Interface.provider) {
