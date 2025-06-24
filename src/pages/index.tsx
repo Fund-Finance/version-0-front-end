@@ -13,6 +13,7 @@ import DonutChart from "../components/DonutChart";
 import { tokenAddressToName, tokenNameToColor, tokenShortToAddress } from "../constants/contract/ERC20Contracts";
 import ProposalModal from "../components/ProposalModal";
 import { TokenPair } from "../types/TokenPair";
+import ContributeModal from '../components/ContributeModule';
 
 interface TokenInformation
 {
@@ -37,6 +38,8 @@ export default function Home() {
   const [donutChartText, setDonutChartText] = useState<string[]>(["Total Invested:", "$0.00"]);
 
   const [submitProposalModalOpen, setSubmitProposalModalOpen] = useState<boolean>(false);
+  const [contributeOpen, setContributeOpen] = useState(false);
+
 
   // this use Effect will initialize the front-end
   // and query the backend frequently to update the neede values
@@ -154,7 +157,8 @@ export default function Home() {
       {/* Main Content */}
       <div className="flex flex-col items-center mt-3 px-4">
         <div className="flex items-center justify-center gap-[10vw] p-[2vw]">
-          {isConnected && <UserButton width="w-40"> Contribute </UserButton>}
+          {isConnected && <UserButton width="w-40" onClick={() => setContributeOpen(true)}> Contribute </UserButton>}
+
           {tokensArray && colorsToHighlight && <DonutChart
             data={tokensArray.map((token) => ({
               name: token.name,
@@ -180,6 +184,10 @@ export default function Home() {
         <ProposalModal isOpen={submitProposalModalOpen} onClose={() => setSubmitProposalModalOpen(false)}
         onSubmit={handleSubmitProposal}
         supportedTokensName={tokensArray.map(token => token.name)} supportedTokensShort={tokensArray.map(token => token.short)}/>
+      <ContributeModal
+        isOpen={contributeOpen}
+        onClose={() => setContributeOpen(false)}
+      />
       </div>
     </div>
   );
