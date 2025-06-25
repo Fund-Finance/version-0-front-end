@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { useAccount } from "wagmi";
 import { getFundTotalValue, getFundAssets,
     getERC20HoldingsInFund, populateWeb3Interface,
-    getERC20ValueInFund, createProposal, getFundAssetAggregators,
+    getERC20ValueInFund, createProposal,
     getAggregatorPrice, getFTokenTotalSupply,
     contributeUsingStableCoin } from "../utils/Web3Interface";
 
@@ -16,6 +16,7 @@ import { tokenAddressToName, tokenNameToColor, tokenShortToAddress, usdcPriceAgg
 import ProposalModal from "../components/ProposalModal";
 import { TokenPair } from "../types/TokenPair";
 import ContributeModal from '../components/ContributeModule';
+import RedeemModal from '../components/RedeemModale';
 
 interface TokenInformation
 {
@@ -45,6 +46,7 @@ export default function Home() {
 
   const [submitProposalModalOpen, setSubmitProposalModalOpen] = useState<boolean>(false);
   const [contributeOpen, setContributeOpen] = useState(false);
+  const [redeemOpen, setRedeemOpen] = useState(false);
 
 
   // this use Effect will initialize the front-end
@@ -183,7 +185,7 @@ export default function Home() {
             lines={mouseHoveringOnCard ? [donutChartHoverOnCardText[0], donutChartHoverOnCardText[1]] : ["Total Invested:", "$" + fundTotalValue]}
           />}
 
-          {isConnected && <UserButton width="w-40"> Redeem </UserButton>}
+          {isConnected && <UserButton width="w-40" onClick={() => setRedeemOpen(true)}> Redeem </UserButton>}
         </div>
         {isConnected && <UserButton onClick={() => setSubmitProposalModalOpen(true)}> Submit a Proposal </UserButton>}
 
@@ -204,6 +206,16 @@ export default function Home() {
         usdcPrice={Number(usdcPrice)}
         fTokenTotalSupply={Number(fTokenTotalSupply)}
         fundTotalValue={Number(fundTotalValue)}
+        onSubmit={handleContributeToFund}
+      />
+        <RedeemModal
+        isOpen={redeemOpen}
+        onClose={() => setRedeemOpen(false)}
+        usdcPrice={Number(usdcPrice)}
+        fTokenTotalSupply={Number(fTokenTotalSupply)}
+        tokenHoldings={ tokensArray.map(token => Number(token.holdings)) }
+        tokenNames={ tokensArray.map(token => token.name) }
+        tokenShorts={ tokensArray.map(token => token.short) }
         onSubmit={handleContributeToFund}
       />
       </div>

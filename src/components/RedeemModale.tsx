@@ -1,16 +1,18 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import React, { useEffect, useRef, useState } from 'react';
 
-interface ContributeModalProps {
+interface RedeemModalProps {
   usdcPrice: number;
-  fundTotalValue: number;
   fTokenTotalSupply: number;
+  tokenHoldings: number[];
+  tokenNames: string[];
+  tokenShorts: string[];
   isOpen: boolean;
   onSubmit?: (amount: number) => void;
   onClose: () => void;
 }
 
-export default function ContributeModal({ isOpen, onClose, onSubmit, usdcPrice, fundTotalValue, fTokenTotalSupply }: ContributeModalProps) {
+export default function RedeemModal({ isOpen, onClose, onSubmit, fTokenTotalSupply, tokenHoldings, tokenNames, tokenShorts }: RedeemModalProps) {
   const modalRef = useRef<HTMLDivElement>(null);
   const [amount, setAmount] = useState('');
 
@@ -22,11 +24,6 @@ export default function ContributeModal({ isOpen, onClose, onSubmit, usdcPrice, 
   useEffect(() => {
     if (!isOpen) resetForm();
   }, [isOpen]);
-  // let usdcPrice = getAggregatorPrice(usdcPriceAggregatorAddress);
-  // let fundTotalValue = getFundTotalValue();
-  // let fTokenTotalSupply = getFTokenTotalSupply();
-  //
-  const preCalculation = (usdcPrice * fTokenTotalSupply) / fundTotalValue;
 
   // Click outside to close
   useEffect(() => {
@@ -45,8 +42,6 @@ export default function ContributeModal({ isOpen, onClose, onSubmit, usdcPrice, 
     };
   }, [isOpen, onClose]);
 
-  // Calculate 2x return
-  const calculatedReturn = (amount ? (parseFloat(amount) * 2).toFixed(2) : '');
 
   return (
     <AnimatePresence>
@@ -65,13 +60,13 @@ export default function ContributeModal({ isOpen, onClose, onSubmit, usdcPrice, 
             exit={{ scale: 0.8, opacity: 0, y: 50 }}
             transition={{ type: 'spring', stiffness: 300, damping: 20 }}
           >
-            <h2 className="text-xl font-bold text-center mb-4">Contribute</h2>
+            <h2 className="text-xl font-bold text-center mb-4">Redeem</h2>
 
         <div className="flex-1 text-center mb-4">
-          <label className="block font-medium mb-1">Amount to Contribute (USDC)</label>
+          <label className="block font-medium mb-1">Amount to Redeem (fToken)</label>
           <div className="flex items-center justify-center gap-2">
             <img
-              src="/United States Dollar Coin.png"
+              src="/fToken.png"
               alt="USDC"
               className="w-6 h-6"
             />
@@ -79,7 +74,7 @@ export default function ContributeModal({ isOpen, onClose, onSubmit, usdcPrice, 
               type="text"
               inputMode="decimal"
               className="w-full border rounded p-2 text-center"
-              placeholder="Enter USDC amount"
+              placeholder="Enter fToken amount"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
             />
@@ -89,24 +84,27 @@ export default function ContributeModal({ isOpen, onClose, onSubmit, usdcPrice, 
 
 <div className="flex-1 mb-6 text-center">
       <label className="block font-medium mb-1">You Will Receive</label>
-  <div className="flex items-center justify-center gap-2">
-    {/* Ethereum Icon */}
-    <img
-      src="/fToken.png"
-      alt="fToken"
-      className="w-6 h-6"
-    />
 
     {/* Input + Label grouped */}
-      <input
-        type="text"
-        placeholder="fTokens!"
-        className="w-full border rounded p-2 bg-gray-100 text-center"
-        readOnly
-        value={amount ? `~${(parseFloat(amount) * preCalculation).toFixed(2)} fTokens` : ''}
-      />
-    <div className="w-6" />
+    {tokenHoldings.map((holding, index) => (
+        <div className="flex items-center justify-center gap-2 mb-4">
+        {/* Ethereum Icon */}
+        <img
+          src={"/" + tokenNames[index] + ".png"}
+          alt="fToken"
+          className="w-6 h-6"
+        />
+          <input
+            type="text"
+            placeholder={tokenNames[index]}
+            className="w-full border rounded p-2 bg-gray-100 text-center"
+            readOnly
+            value={amount ? `~${(parseFloat(amount) / fTokenTotalSupply) * holding} ${tokenShorts[index]}` : ''}
+          />
+        <div className="w-6" />
+
     </div>
+    ))}
 </div>
 
             <div className="flex items-center justify-between">
@@ -114,7 +112,7 @@ export default function ContributeModal({ isOpen, onClose, onSubmit, usdcPrice, 
               className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600 transition"
               onClick={onSubmit ? () => onSubmit(parseFloat(amount)) : undefined}
             >
-              Contribute
+              Redeem
             </button>
             </div>
           </motion.div>
