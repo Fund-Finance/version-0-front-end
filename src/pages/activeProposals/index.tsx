@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
-import { getERC20TokenDecimals, getFundActiveProposals } from "../../utils/Web3Interface";
-import { ProposalStructOutput } from "../../typechain-types/contracts/FundController";
-import { tokenAddressToShort } from "../../constants/contract/ERC20Contracts";
 import { tokenAddressToName } from "../../constants/contract/ERC20Contracts";
+import Link from "next/link";
+
+import Web3Manager from "../../lib/Web3Interface";
 
 type frontEndProposal = [
     number, // id
@@ -19,6 +19,7 @@ type frontEndProposal = [
     amountIn: number;
     approvalTimelockEnd: number;
 };
+const web3Manager = Web3Manager.getInstance();
 
 export default function Home()
 {
@@ -34,12 +35,14 @@ export default function Home()
       if (typeof window === "undefined") 
           return;
 
-      let rawProposals = await getFundActiveProposals();
+      let rawProposals = await web3Manager.getFundActiveProposals();
+      console.log("Raw Proposals:");
+      console.log(rawProposals);
       let editedProposals: frontEndProposal[] = [];
       for (let proposal of rawProposals)
       {
         // Convert assetToTrade to short name
-        let decimals = BigInt(await getERC20TokenDecimals(proposal.assetToTrade));
+        let decimals = BigInt(await web3Manager.getERC20TokenDecimals(proposal.assetToTrade));
         const newAmountIn = Number(proposal.amountIn) / Number((10n ** decimals));
         const newProposal: frontEndProposal = Object.assign(
         [
@@ -71,12 +74,12 @@ export default function Home()
     // run at a set interval
     async function queryBackend()
     {
-      let rawProposals = await getFundActiveProposals();
+      let rawProposals = await web3Manager.getFundActiveProposals();
       let editedProposals: frontEndProposal[] = [];
       for (let proposal of rawProposals)
       {
         // Convert assetToTrade to short name
-        let decimals = BigInt(await getERC20TokenDecimals(proposal.assetToTrade));
+        let decimals = BigInt(await web3Manager.getERC20TokenDecimals(proposal.assetToTrade));
         const newAmountIn = Number(proposal.amountIn) / Number(10n ** decimals);
         const newProposal: frontEndProposal = Object.assign(
         [
@@ -129,10 +132,12 @@ export default function Home()
       {/* Table Rows (mocked entries with circles) */}
       <div className="bg-white shadow rounded-b-md divide-y">
         {proposals.map((proposal, index) => (
-          <div
-            key={index}
-            className="grid grid-cols-[7%_25%_34%_34%] px-4 py-4 items-center text-gray-600 transition duration-200 ease-in-out transform hover:bg-gray-200 hover:scale-[1.01] cursor-pointer"
-          >
+          <Link
+    key={proposal.id}
+    href={`/proposal/${proposal.id}`}
+    className="grid grid-cols-[7%_25%_34%_34%] px-4 py-4 items-center text-gray-600 border-b 
+               transition duration-200 ease-in-out transform hover:bg-gray-100 hover:scale-[1.01] cursor-pointer"
+  >
             <div className="text-center text-black">#{proposal.id}</div>
             <div className="text-center text-black">{proposal.proposer}</div>
             <div className="flex items-center justify-center gap-2">
@@ -157,7 +162,7 @@ export default function Home()
             <div className="text-center text-black">
                 Justification Here
             </div>
-          </div>
+          </Link>
         ))}
       </div>
     </div>

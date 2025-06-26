@@ -57,6 +57,7 @@ export interface FundControllerInterface extends Interface {
       | "checkIsSuccessfulProposer"
       | "createProposal"
       | "getActiveProposals"
+      | "getProposalById"
       | "initialFundTokenValue"
       | "initialize"
       | "intentToAccept"
@@ -106,6 +107,10 @@ export interface FundControllerInterface extends Interface {
   encodeFunctionData(
     functionFragment: "getActiveProposals",
     values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getProposalById",
+    values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "initialFundTokenValue",
@@ -212,6 +217,10 @@ export interface FundControllerInterface extends Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "getActiveProposals",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getProposalById",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -383,6 +392,12 @@ export interface FundController extends BaseContract {
 
   getActiveProposals: TypedContractMethod<[], [ProposalStructOutput[]], "view">;
 
+  getProposalById: TypedContractMethod<
+    [id: BigNumberish],
+    [ProposalStructOutput[]],
+    "view"
+  >;
+
   initialFundTokenValue: TypedContractMethod<[], [bigint], "view">;
 
   initialize: TypedContractMethod<
@@ -538,6 +553,9 @@ export interface FundController extends BaseContract {
   getFunction(
     nameOrSignature: "getActiveProposals"
   ): TypedContractMethod<[], [ProposalStructOutput[]], "view">;
+  getFunction(
+    nameOrSignature: "getProposalById"
+  ): TypedContractMethod<[id: BigNumberish], [ProposalStructOutput[]], "view">;
   getFunction(
     nameOrSignature: "initialFundTokenValue"
   ): TypedContractMethod<[], [bigint], "view">;
