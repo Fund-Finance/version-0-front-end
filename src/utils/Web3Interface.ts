@@ -211,6 +211,23 @@ export async function contributeUsingStableCoin(amount:number)
     );
 }
 
+export async function redeemFromFund(amount: number)
+{
+    if (!web3Interface || !web3Interface.fundControllerContract || !web3Interface.provider) {
+        throw new Error("Web3 interface not initialized");
+    }
+
+    // fToken uses 18 decimals
+    const amount_raw = BigInt(amount) * (10n ** 18n); // Convert to raw amount
+    console.log("Redeeming amount (raw):", amount_raw.toString());
+
+    // get the signer to sign the transaction
+    const signer = await web3Interface.provider.getSigner();
+    await web3Interface.fundControllerContract.connect(signer).redeemAssets(
+        amount_raw
+    );
+}
+
 export async function createProposal(addressesToTrade: string[], addressesToReceive: string[], amountsToTrade: number[]): Promise<void>
 {
     if (!web3Interface || !web3Interface.fundControllerContract || !web3Interface.provider) {

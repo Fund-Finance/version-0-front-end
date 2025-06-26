@@ -5,7 +5,7 @@ import { getFundTotalValue, getFundAssets,
     getERC20HoldingsInFund, populateWeb3Interface,
     getERC20ValueInFund, createProposal,
     getAggregatorPrice, getFTokenTotalSupply,
-    contributeUsingStableCoin } from "../utils/Web3Interface";
+    contributeUsingStableCoin, redeemFromFund } from "../utils/Web3Interface";
 
 import GreeterMessage from "../components/GreeterMessage";
 import UserButton from "../components/UserButton";
@@ -162,6 +162,12 @@ export default function Home() {
       contributeUsingStableCoin(amount);
   }
 
+  const handleRedeemFromFund = async (amount: number) => {
+      setRedeemOpen(false);
+      // Implement redeem logic here
+      redeemFromFund(amount);
+  }
+
   return (
     <div className="min-h-screen bg-gray-100 p-4 font-sans">
       {/* Header */}
@@ -216,7 +222,7 @@ export default function Home() {
         tokenHoldings={ tokensArray.map(token => Number(token.holdings)) }
         tokenNames={ tokensArray.map(token => token.name) }
         tokenShorts={ tokensArray.map(token => token.short) }
-        onSubmit={handleContributeToFund}
+        onSubmit={handleRedeemFromFund}
       />
       </div>
     </div>
