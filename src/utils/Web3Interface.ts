@@ -130,6 +130,22 @@ export async function getERC20ValueInFund (address: string): Promise<string>
     return result.toString();
 }
 
+export async function getERC20TokenDecimals(address: string): Promise<number>
+{
+    if (!web3Interface || !web3Interface.erc20TokenContracts.has(address))
+        return 0;
+
+    const contract = web3Interface.erc20TokenContracts.get(address);
+    if (!contract) return 0;
+
+    try {
+        return await contract.decimals();
+    } catch (error) {
+        console.error("Error fetching decimals for token:", error);
+        return 0;
+    }
+}
+
 export async function getFundTokenAmountFromUser (address: string): Promise<string>
 {
     if (!web3Interface || !web3Interface.fundTokenContract) 
@@ -254,8 +270,15 @@ export async function createProposal(addressesToTrade: string[], addressesToRece
         throw new Error("Web3 interface not initialized");
     }
     
+    const contract = web3Interface.erc20TokenContracts.get(addressesToTrade[0]);
+    if (!contract) {
+        throw new Error("Contract not found for the address to trade");
+    }
+    const decimals = await contract.decimals();
     const amountToTrade_raw =
-        BigInt(amountsToTrade[0]) * (10n ** 18n); 
+        amountsToTrade[0] * (10 ** Number(decimals)); 
+
+    console.log("In creating proposal, amount to trade (raw):", amountToTrade_raw);
 
     // get the signer to sign the transaction
     const signer = await web3Interface.provider.getSigner();

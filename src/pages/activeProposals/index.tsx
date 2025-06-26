@@ -1,11 +1,28 @@
 import { useState, useEffect } from "react";
-import { getFundActiveProposals } from "../../utils/Web3Interface";
+import { getERC20TokenDecimals, getFundActiveProposals } from "../../utils/Web3Interface";
 import { ProposalStructOutput } from "../../typechain-types/contracts/FundController";
 import { tokenAddressToShort } from "../../constants/contract/ERC20Contracts";
+import { tokenAddressToName } from "../../constants/contract/ERC20Contracts";
+
+type frontEndProposal = [
+    number, // id
+    string, // proposer
+    string, // assetToTrade
+    string, // assetToReceive
+    number, // amountIn
+    number  // approvalTimelockEnd
+] & {
+    id: number;
+    proposer: string;
+    assetToTrade: string;
+    assetToReceive: string;
+    amountIn: number;
+    approvalTimelockEnd: number;
+};
 
 export default function Home()
 {
-  const [proposals, setProposals] = useState<ProposalStructOutput[]>([]);
+  const [proposals, setProposals] = useState<frontEndProposal[]>([]);
 
   // this use Effect will initialize the front-end
   // and query the backend frequently to update the neede values
@@ -17,15 +34,71 @@ export default function Home()
       if (typeof window === "undefined") 
           return;
 
-      setProposals(await getFundActiveProposals());
+      let rawProposals = await getFundActiveProposals();
+      let editedProposals: frontEndProposal[] = [];
+      for (let proposal of rawProposals)
+      {
+        // Convert assetToTrade to short name
+        let decimals = BigInt(await getERC20TokenDecimals(proposal.assetToTrade));
+        const newAmountIn = Number(proposal.amountIn) / Number((10n ** decimals));
+        const newProposal: frontEndProposal = Object.assign(
+        [
+            Number(proposal.id),
+            proposal.proposer,
+            proposal.assetToTrade,
+            proposal.assetToReceive,
+            newAmountIn,
+            Number(proposal.approvalTimelockEnd),
+        ],
+        {
+            id: Number(proposal.id),
+            proposer: proposal.proposer,
+            assetToTrade: proposal.assetToTrade,
+            assetToReceive: proposal.assetToReceive,
+            amountIn: Number(newAmountIn),
+            approvalTimelockEnd: Number(proposal.approvalTimelockEnd),
+        });
+        editedProposals.push(newProposal);
+      }
+
+      console.log("Edited Proposals:", editedProposals);
+
+
+      setProposals(editedProposals);
     };
 
     // The queryBackend function which is meant to
     // run at a set interval
     async function queryBackend()
     {
-        console.log("In query backend");
-      setProposals(await getFundActiveProposals());
+      let rawProposals = await getFundActiveProposals();
+      let editedProposals: frontEndProposal[] = [];
+      for (let proposal of rawProposals)
+      {
+        // Convert assetToTrade to short name
+        let decimals = BigInt(await getERC20TokenDecimals(proposal.assetToTrade));
+        const newAmountIn = Number(proposal.amountIn) / Number(10n ** decimals);
+        const newProposal: frontEndProposal = Object.assign(
+        [
+            Number(proposal.id),
+            proposal.proposer,
+            proposal.assetToTrade,
+            proposal.assetToReceive,
+            newAmountIn,
+            Number(proposal.approvalTimelockEnd),
+        ],
+        {
+            id: Number(proposal.id),
+            proposer: proposal.proposer,
+            assetToTrade: proposal.assetToTrade,
+            assetToReceive: proposal.assetToReceive,
+            amountIn: newAmountIn,
+            approvalTimelockEnd: Number(proposal.approvalTimelockEnd),
+        });
+        editedProposals.push(newProposal);
+      }
+
+      setProposals(editedProposals);
     }
     init();
     queryBackend();
@@ -62,7 +135,25 @@ export default function Home()
           >
             <div className="text-center text-black">#{proposal.id}</div>
             <div className="text-center text-black">{proposal.proposer}</div>
-            <div className="text-center text-black">{tokenAddressToShort.get(proposal.assetToTrade)} → {tokenAddressToShort.get(proposal.assetToReceive)}</div>
+            <div className="flex items-center justify-center gap-2">
+              {/* From Token */}
+              <div className="flex items-center gap-1">
+                <img src={"/" + (tokenAddressToName.get(proposal.assetToTrade)?.[0] ?? "default")
+                    + ".png"} alt={tokenAddressToName.get(proposal.assetToTrade)?.[1]} className="w-4 h-4" />
+                <span>{Number(proposal.amountIn)} {tokenAddressToName.get(proposal.assetToTrade)?.[1]}</span>
+              </div>
+
+              {/* Arrow */}
+              <span>→</span>
+
+              {/* To Token */}
+              <div className="flex items-center gap-1">
+                <img src={"/" + (tokenAddressToName.get(proposal.assetToReceive)?.[0] ?? "default")
+                    + ".png"} alt={tokenAddressToName.get(proposal.assetToReceive)?.[1]} className="w-4 h-4" />
+                <span>YY {tokenAddressToName.get(proposal.assetToReceive)?.[1]}</span>
+                </div>
+            </div>
+
             <div className="text-center text-black">
                 Justification Here
             </div>
