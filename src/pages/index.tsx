@@ -14,7 +14,9 @@ import UserButton from "../components/UserButton";
 
 import TokenAllocationCard from "../components/TokenAllocationCard";
 import DonutChart from "../components/DonutChart";
-import { tokenAddressToName, tokenNameToColor, tokenShortToAddress, usdcPriceAggregatorAddress } from "../constants/contract/ERC20Contracts";
+import { tokenAddressToName, tokenNameToColor,
+    tokenShortToAddress, usdcPriceAggregatorAddress }
+    from "../constants/contract/ERC20Contracts";
 import ProposalModal from "../components/ProposalModal";
 import { TokenPair } from "../types/TokenPair";
 import ContributeModal from '../components/ContributeModule';
