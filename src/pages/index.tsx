@@ -22,6 +22,8 @@ import { TokenPair } from "../types/TokenPair";
 import ContributeModal from '../components/ContributeModule';
 import RedeemModal from '../components/RedeemModale';
 
+import Link from "next/link";
+
 interface TokenInformation
 {
     name: string;
@@ -194,7 +196,9 @@ export default function Home() {
             <img src="/fToken.png" alt="Logo" width={25} height={25} className="rounded " />
             <p className="text-gray-600 font-bold p-1">{userFTokenBalance}</p>
         </div>
-        <p className="text-gray-600 font-bold px-6">Active Proposals: {numberOfActiveProposals}</p>
+        <Link href="/activeProposals">
+        <span className="text-black font-bold hover:text-blue-500 cursor-pointer px-6">Active Proposals: {numberOfActiveProposals}</span>
+        </Link>
         <ConnectButton showBalance={false} chainStatus={"icon"}/>
       </div>
 
