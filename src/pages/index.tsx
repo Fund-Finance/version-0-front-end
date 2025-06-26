@@ -5,7 +5,9 @@ import { getFundTotalValue, getFundAssets,
     getERC20HoldingsInFund, populateWeb3Interface,
     getERC20ValueInFund, createProposal,
     getAggregatorPrice, getFTokenTotalSupply,
-    contributeUsingStableCoin, redeemFromFund } from "../utils/Web3Interface";
+    contributeUsingStableCoin, redeemFromFund, 
+    getFundTokenAmountFromUser,
+    getFundActiveProposals} from "../utils/Web3Interface";
 
 import GreeterMessage from "../components/GreeterMessage";
 import UserButton from "../components/UserButton";
@@ -31,7 +33,7 @@ interface TokenInformation
 
 export default function Home() {
 
-  const { isConnected } = useAccount();
+  const { isConnected, address } = useAccount();
 
   const [tokensArray, setTokensArray] = useState<TokenInformation[]>([]);
   // the state variables for this front-end
@@ -47,6 +49,10 @@ export default function Home() {
   const [submitProposalModalOpen, setSubmitProposalModalOpen] = useState<boolean>(false);
   const [contributeOpen, setContributeOpen] = useState(false);
   const [redeemOpen, setRedeemOpen] = useState(false);
+
+  const [userFTokenBalance, setUserFTokenBalance] = useState<string>("0.00");
+
+  const [numberOfActiveProposals, setNumberOfActiveProposals] = useState<number>(0);
 
 
   // this use Effect will initialize the front-end
@@ -76,7 +82,10 @@ export default function Home() {
       setUsdcPrice(usdcPrice);
       const totalValue = await getFundTotalValue();
       setFundTotalValue(totalValue);
+      const activeProposals = await getFundActiveProposals();
+      setNumberOfActiveProposals(activeProposals.length);
       const fundAssets = await getFundAssets();
+
       let tokens = [];
       for(let i = 0; i < fundAssets.length; i++)
       {
@@ -99,6 +108,12 @@ export default function Home() {
       }
       setTokensArray(tokens);
 
+      if(isConnected)
+      {
+          const userBalance = await getFundTokenAmountFromUser(address || "");
+          setUserFTokenBalance(userBalance);
+      }
+
       return tokens;
 
     }
@@ -108,7 +123,7 @@ export default function Home() {
     // Set an interval to query the backend every second
     const interval = setInterval(queryBackend, 1000);
     return () => clearInterval(interval); // Cleanup interval on unmount
-  }, []);
+  }, [isConnected, address]);
 
 
   // handles the case when the mouse is hovering over a card
@@ -172,8 +187,13 @@ export default function Home() {
     <div className="min-h-screen bg-gray-100 p-4 font-sans">
       {/* Header */}
       <div className="flex justify-between items-center border-b py-4 px-6">
-        <div className="text-lg font-bold">Logo</div>
-        <ConnectButton />
+        <div className="text-lg font-bold px-10">Logo</div>
+        <div className="flex items-center">
+            <img src="/fToken.png" alt="Logo" width={25} height={25} className="rounded " />
+            <p className="text-gray-600 font-bold p-1">{userFTokenBalance}</p>
+        </div>
+        <p className="text-gray-600 font-bold px-6">Active Proposals: {numberOfActiveProposals}</p>
+        <ConnectButton showBalance={false} chainStatus={"icon"}/>
       </div>
 
       {/* Main Content */}

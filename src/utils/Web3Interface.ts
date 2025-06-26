@@ -130,6 +130,27 @@ export async function getERC20ValueInFund (address: string): Promise<string>
     return result.toString();
 }
 
+export async function getFundTokenAmountFromUser (address: string): Promise<string>
+{
+    if (!web3Interface || !web3Interface.fundTokenContract) 
+        return "0.00";
+
+    let rawResult = await web3Interface.fundTokenContract.balanceOf(address);
+    if (rawResult === null || rawResult === undefined) return "0.00";
+    let result = Number(rawResult) / (10 ** 18); // fund token uses 18 decimals
+    result = Math.round(result * 100) / 100; // round to 2 decimal places
+    return result.toString();
+}
+
+export async function getFundActiveProposals()
+{
+    if (!web3Interface || !web3Interface.fundControllerContract)
+        return [];
+    
+    const proposals = await web3Interface.fundControllerContract.getActiveProposals();
+    return proposals
+}
+
 /******************** Aggregator Functions ********************/
 export async function getAggregatorPrice(address: string): Promise<string>
 {
@@ -137,12 +158,11 @@ export async function getAggregatorPrice(address: string): Promise<string>
         return "0.00";
    
     const contract = web3Interface.aggregatorContracts.get(address);
-    if (!contract) return "10.10";
+    if (!contract) return "00.00";
 
     try {
         const latestRoundData = await contract.latestRoundData();
         let result = Number(latestRoundData.answer) / (10 ** Number(await contract.decimals()));
-        // result = Math.round(result * 100) / 100; // round to 2 decimal places
         return result.toString();
     } catch (error) {
         console.error("Error fetching price from aggregator:", error);
