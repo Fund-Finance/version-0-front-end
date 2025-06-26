@@ -1,5 +1,41 @@
+import { useState, useEffect } from "react";
+import { getFundActiveProposals } from "../../utils/Web3Interface";
+import { ProposalStructOutput } from "../../typechain-types/contracts/FundController";
+import { tokenAddressToShort } from "../../constants/contract/ERC20Contracts";
 
-export default function Home() {
+export default function Home()
+{
+  const [proposals, setProposals] = useState<ProposalStructOutput[]>([]);
+
+  // this use Effect will initialize the front-end
+  // and query the backend frequently to update the neede values
+  useEffect(() =>
+  {
+    // The initialize function which runs only once
+    async function init()
+    {
+      if (typeof window === "undefined") 
+          return;
+
+      setProposals(await getFundActiveProposals());
+    };
+
+    // The queryBackend function which is meant to
+    // run at a set interval
+    async function queryBackend()
+    {
+        console.log("In query backend");
+      setProposals(await getFundActiveProposals());
+    }
+    init();
+    queryBackend();
+
+    // Set an interval to query the backend every second
+    const interval = setInterval(queryBackend, 1000);
+    return () => clearInterval(interval); // Cleanup interval on unmount
+
+  }, []);
+
   return (
     <div className="min-h-screen bg-gray-100 p-6 mb-6">
       {/* Header */}
@@ -10,27 +46,25 @@ export default function Home() {
       </header>
 
       {/* Table Header */}
-      <div className="grid grid-cols-5 bg-white shadow rounded-t-md px-4 py-3 font-semibold text-gray-700">
-        <div>Proposal ID</div>
-        <div>User</div>
-        <div>XX ETH → YY BTC</div>
-        <div>XX COMP → YY UNI</div>
-        <div>Actions</div>
+      <div className="grid grid-cols-[7%_25%_34%_34%] bg-white shadow rounded-t-md px-4 py-3 font-semibold text-gray-700">
+        <div className="text-center">Proposal ID</div>
+        <div className="text-center">User</div>
+        <div className="text-center">Assets to Trade</div>
+        <div className="text-center">Justification</div>
       </div>
 
       {/* Table Rows (mocked entries with circles) */}
       <div className="bg-white shadow rounded-b-md divide-y">
-        {Array.from({ length: 10 }).map((_, index) => (
+        {proposals.map((proposal, index) => (
           <div
             key={index}
-            className="grid grid-cols-5 px-4 py-4 items-center text-gray-600"
+            className="grid grid-cols-[7%_25%_34%_34%] px-4 py-4 items-center text-gray-600 transition duration-200 ease-in-out transform hover:bg-gray-200 hover:scale-[1.01] cursor-pointer"
           >
-            <div>#{index + 1}</div>
-            <div>user{index + 1}.eth</div>
-            <div>1.0 ETH → 0.03 BTC</div>
-            <div>25 COMP → 40 UNI</div>
-            <div>
-              <span className="w-3 h-3 bg-black rounded-full inline-block"></span>
+            <div className="text-center text-black">#{proposal.id}</div>
+            <div className="text-center text-black">{proposal.proposer}</div>
+            <div className="text-center text-black">{tokenAddressToShort.get(proposal.assetToTrade)} → {tokenAddressToShort.get(proposal.assetToReceive)}</div>
+            <div className="text-center text-black">
+                Justification Here
             </div>
           </div>
         ))}
