@@ -394,7 +394,7 @@ export interface FundController extends BaseContract {
 
   getProposalById: TypedContractMethod<
     [id: BigNumberish],
-    [ProposalStructOutput[]],
+    [ProposalStructOutput],
     "view"
   >;
 
@@ -555,7 +555,7 @@ export interface FundController extends BaseContract {
   ): TypedContractMethod<[], [ProposalStructOutput[]], "view">;
   getFunction(
     nameOrSignature: "getProposalById"
-  ): TypedContractMethod<[id: BigNumberish], [ProposalStructOutput[]], "view">;
+  ): TypedContractMethod<[id: BigNumberish], [ProposalStructOutput], "view">;
   getFunction(
     nameOrSignature: "initialFundTokenValue"
   ): TypedContractMethod<[], [bigint], "view">;

@@ -1,4 +1,4 @@
-"use client";
+// "use client";
 
 import { FUND_TOKEN_CONTRACT_ADDRESS } from "../constants/contract/FundTokenContract";
 import { FUND_CONTROLLER_CONTRACT_ADDRESS } from "../constants/contract/FundControllerContract";
@@ -179,7 +179,7 @@ public getProvider(): ethers.BrowserProvider {
   public async getFundProposalById(proposalId: number): Promise<any> {
     const controller = this.web3Interface.fundControllerContract;
     if (!controller) return null;
-    return await controller.getProposalById(proposalId);
+    return await controller.getProposalById(BigInt(proposalId));
   }
 
   public async contributeUsingStableCoin(amount: number): Promise<void> {
