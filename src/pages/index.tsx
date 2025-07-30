@@ -205,6 +205,9 @@ export default function Home() {
         <Link href="/activeProposals">
         <span className="text-black font-bold hover:text-blue-500 cursor-pointer px-6">Active Proposals: {numberOfActiveProposals}</span>
         </Link>
+        <p className="text-gray-600 font-bold px-6">Digital Dollars: 20,000</p>
+        <p className="text-gray-600 font-bold px-6">Deposit</p>
+        <p className="text-gray-600 font-bold px-6">Withdraw</p>
         <ConnectButton showBalance={false} chainStatus={"icon"}/>
       </div>
 
