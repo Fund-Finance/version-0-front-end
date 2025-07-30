@@ -21,4 +21,11 @@ export const tokenShortToAddress: Map<string, string> = new Map([
     ["cbBTC", cbBTCAddress]
 ]);
 
+export const tokenAddressToShort: Map<string, string> = new Map([
+    [usdcAddress, "USDC"],
+    [wethAddress, "wETH"],
+    [cbBTCAddress, "cbBTC"]
+]);
+
+
 export const usdcPriceAggregatorAddress = "0x7e860098F58bBFC8648a4311b374B1D669a2bc6B";

@@ -1,5 +1,6 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import React, { useEffect, useRef, useState } from 'react';
+import Web3Manager from '../lib/Web3Interface';
 
 interface RedeemModalProps {
   usdcPrice: number;
@@ -12,12 +13,14 @@ interface RedeemModalProps {
   onClose: () => void;
 }
 
-export default function RedeemModal({ isOpen, onClose, onSubmit, fTokenTotalSupply, tokenHoldings, tokenNames, tokenShorts }: RedeemModalProps) {
+export default function RedeemModal({ isOpen, onClose, onSubmit, fTokenTotalSupply, tokenHoldings, tokenNames, tokenShorts, usdcPrice }: RedeemModalProps) {
   const modalRef = useRef<HTMLDivElement>(null);
   const [amount, setAmount] = useState('');
+  const [usdcRedemptionAmount, setUsdcRedemptionAmount] = useState(0);
 
   const resetForm = () => {
     setAmount('');
+    setUsdcRedemptionAmount(0);
   };
 
   // Reset when closed
@@ -42,6 +45,40 @@ export default function RedeemModal({ isOpen, onClose, onSubmit, fTokenTotalSupp
     };
   }, [isOpen, onClose]);
 
+  // Calculate USDC redemption amount when amount changes
+  useEffect(() => {
+    const calculateUsdcRedemption = async () => {
+      if (!amount || !fTokenTotalSupply || fTokenTotalSupply === 0) {
+        setUsdcRedemptionAmount(0);
+        return;
+      }
+      
+      const fTokenAmount = parseFloat(amount);
+      const userShare = fTokenAmount / fTokenTotalSupply;
+      
+      try {
+        const web3Manager = Web3Manager.getInstance();
+        let totalUsdcValue = 0;
+        
+        // Get the fund assets to calculate their dollar values
+        const fundAssets = await web3Manager.getFundAssets();
+        
+        for (let i = 0; i < fundAssets.length; i++) {
+          const tokenAddress = fundAssets[i];
+          const tokenDollarValue = await web3Manager.getERC20ValueInFund(tokenAddress);
+          const userTokenDollarValue = userShare * parseFloat(tokenDollarValue);
+          totalUsdcValue += userTokenDollarValue;
+        }
+        
+        setUsdcRedemptionAmount(totalUsdcValue);
+      } catch (error) {
+        console.error('Error calculating USDC redemption:', error);
+        setUsdcRedemptionAmount(0);
+      }
+    };
+
+    calculateUsdcRedemption();
+  }, [amount, fTokenTotalSupply]);
 
   return (
     <AnimatePresence>
@@ -67,7 +104,7 @@ export default function RedeemModal({ isOpen, onClose, onSubmit, fTokenTotalSupp
           <div className="flex items-center justify-center gap-2">
             <img
               src="/fToken.png"
-              alt="USDC"
+              alt="fToken"
               className="w-6 h-6"
             />
             <input
@@ -85,26 +122,23 @@ export default function RedeemModal({ isOpen, onClose, onSubmit, fTokenTotalSupp
 <div className="flex-1 mb-6 text-center">
       <label className="block font-medium mb-1">You Will Receive</label>
 
-    {/* Input + Label grouped */}
-    {tokenHoldings.map((holding, index) => (
-        <div className="flex items-center justify-center gap-2 mb-4">
-        {/* Ethereum Icon */}
+    {/* USDC Redemption Display */}
+    <div className="flex items-center justify-center gap-2 mb-4">
+        {/* USDC Icon */}
         <img
-          src={"/" + tokenNames[index] + ".png"}
-          alt="fToken"
+          src="/United States Dollar Coin.png"
+          alt="USDC"
           className="w-6 h-6"
         />
           <input
             type="text"
-            placeholder={tokenNames[index]}
+            placeholder="USDC"
             className="w-full border rounded p-2 bg-gray-100 text-center"
             readOnly
-            value={amount ? `~${(parseFloat(amount) / fTokenTotalSupply) * holding} ${tokenShorts[index]}` : ''}
+            value={amount ? `~${usdcRedemptionAmount.toFixed(6)} USDC` : ''}
           />
         <div className="w-6" />
-
     </div>
-    ))}
 </div>
 
             <div className="flex items-center justify-between">
