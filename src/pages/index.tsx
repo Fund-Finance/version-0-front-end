@@ -205,9 +205,8 @@ export default function Home() {
         <Link href="/activeProposals">
         <span className="text-black font-bold hover:text-blue-500 cursor-pointer px-6">Active Proposals: {numberOfActiveProposals}</span>
         </Link>
-        <p className="text-gray-600 font-bold px-6">Digital Dollars: 20,000</p>
-        <p className="text-gray-600 font-bold px-6">Deposit</p>
-        <p className="text-gray-600 font-bold px-6">Withdraw</p>
+        <p className="text-gray-600 font-bold px-6">Total Fund Value: ${fundTotalValue}</p>
+        <p className="text-gray-600 font-bold px-6">Your Stake: {isConnected && userFTokenBalance && fTokenTotalSupply ? ((parseFloat(userFTokenBalance) / parseFloat(fTokenTotalSupply)) * 100).toFixed(2) : "0.00"}%</p>
         <ConnectButton showBalance={false} chainStatus={"icon"}/>
       </div>
 
@@ -216,15 +215,17 @@ export default function Home() {
         <div className="flex items-center justify-center gap-[10vw] p-[2vw]">
           {isConnected && <UserButton width="w-40" onClick={() => setContributeOpen(true)}> Contribute </UserButton>}
 
-          {tokensArray && colorsToHighlight && <DonutChart
-            data={tokensArray.map((token) => ({
+          <DonutChart
+            data={tokensArray ? tokensArray.map((token) => ({
               name: token.name,
               value: parseFloat(token.percentage),
-              color: colorsToHighlight[tokensArray.indexOf(token)],
-            }))}
+              color: colorsToHighlight ? colorsToHighlight[tokensArray.indexOf(token)] : token.color,
+              short: token.short,
+            })) : []}
             customHover={mouseHoveringOnCard}
-            lines={mouseHoveringOnCard ? [donutChartHoverOnCardText[0], donutChartHoverOnCardText[1]] : ["Total Invested:", "$" + fundTotalValue]}
-          />}
+            lines={mouseHoveringOnCard ? [donutChartHoverOnCardText[0], donutChartHoverOnCardText[1]] : ["Your Investment:", "$" + (isConnected && userFTokenBalance && fTokenTotalSupply ? ((parseFloat(userFTokenBalance) / parseFloat(fTokenTotalSupply)) * parseFloat(fundTotalValue)).toFixed(2) : "0.00")]}
+            isConnected={isConnected}
+          />
 
           {isConnected && <UserButton width="w-40" onClick={() => setRedeemOpen(true)}> Redeem </UserButton>}
         </div>
