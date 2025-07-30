@@ -7,9 +7,11 @@ interface DonutChartProps {
   customHover: boolean;
   lines: string[];
   isConnected?: boolean;
+  userStake: string;
+  fundTotalValue: string;
 }
 
-const DonutChart = ({ data, customHover, lines, isConnected = false }: DonutChartProps) => {
+const DonutChart = ({ data, customHover, lines, isConnected = false, userStake, fundTotalValue}: DonutChartProps) => {
   const [isClient, setIsClient] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
 
@@ -30,7 +32,6 @@ const DonutChart = ({ data, customHover, lines, isConnected = false }: DonutChar
   if (!isClient) return null;
 
   // If not connected, show animated logos
-  if (!isConnected) {
     return (
       <div className="relative w-[280px] h-[280px] rounded-full">
         <style jsx>{`
@@ -66,9 +67,7 @@ const DonutChart = ({ data, customHover, lines, isConnected = false }: DonutChar
           if (customHover && lines.length > 0) {
             const hoverText = lines[0]; // e.g., "1,234.56 USDC:"
             const match = hoverText.match(/(\w+):$/); // Extract token short before the colon
-            if (match) {
-              hoveredTokenShort = match[1];
-            }
+              hoveredTokenShort = lines[2];
           }
           
           // Find the hovered token data by matching the short name
@@ -120,17 +119,32 @@ const DonutChart = ({ data, customHover, lines, isConnected = false }: DonutChar
           }}
         >
           <div className="text-center">
-            {customHover ? (
+            {customHover && isConnected ? (
               <>
-                <p className="text-sm font-semibold text-gray-700">{lines[0]}</p>
-                <p className="text-xs text-gray-500">{lines[1]}</p>
+                <p className="text-sm font-semibold text-gray-700">You have</p>
+                <p className="text-sm font-semibold text-gray-700">{(Number(lines[0]) * Number(userStake) / 100.0).toFixed(3) + " " + lines[2]}</p>
+                <p className="text-xs text-gray-500">${(Number(lines[1]) * Number(userStake) / 100.0).toFixed(2)}</p>
               </>
-            ) : (
+            ) : customHover && !isConnected ? (
+              <>
+                <p className="text-sm font-semibold text-gray-700">{lines[0] + " " + lines[2]}</p>
+                <p className="text-xs text-gray-500">${lines[1]}</p>
+              </>
+            ) : !isConnected ? (
               <>
                 <p className="text-sm font-semibold text-gray-700">Connect Wallet</p>
                 <p className="text-xs text-gray-500">to start</p>
               </>
-            )}
+            ) : Number(userStake) == 0 ? (
+              <>
+                <p className="text-sm font-semibold text-gray-700">Contribute to get started</p>
+              </>
+            ) :
+              <>
+                <p className="text-sm font-semibold text-gray-700">Your investment</p>
+                <p className="text-xs text-gray-500">${((Number(userStake) / 100.0) * Number(fundTotalValue)).toFixed(2)}</p>
+               </> 
+            }
           </div>
         </div>
 
@@ -151,76 +165,5 @@ const DonutChart = ({ data, customHover, lines, isConnected = false }: DonutChar
     );
   }
 
-  // Original donut chart for connected users
-  return (
-    <div
-      className="relative w-[280px] h-[280px] rounded-full"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-    >
-      {/* The donut hole circle matching innerRadius */}
-      <div
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-gray-300 flex items-center justify-center"
-        style={{
-          width: 280, // innerRadius 100 * 2
-          height: 280,
-        }}
-      >
-        <div className="text-center">
-          <p className="text-xl text-black fade-transition">{lines[0]}</p>
-          <p className="text-xl text-black fade-transition">{lines[1]}</p>
-        </div>
-      </div>
-      {!customHover && (
-        <div
-          className={`absolute inset-0 transition-opacity duration-300 ${
-            isHovered
-              ? "opacity-100 pointer-events-auto"
-              : "opacity-0 pointer-events-none"
-          }`}
-        >
-          <PieChart width={280} height={280}>
-            <Pie
-              data={data}
-              cx="50%"
-              cy="50%"
-              innerRadius={125}
-              outerRadius={140}
-              startAngle={90} // start at 12 o'clock
-              endAngle={-270.5}
-              dataKey="value"
-              isAnimationActive={false}
-              stroke="none"
-            >
-              {data.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={entry.color} />
-              ))}
-            </Pie>
-          </PieChart>
-        </div>
-      )}
-      {customHover && (
-        <PieChart width={280} height={280}>
-          <Pie
-            data={data}
-            cx="50%"
-            cy="50%"
-            innerRadius={125}
-            outerRadius={140}
-            startAngle={90} // start at 12 o'clock
-            endAngle={-270.5}
-            dataKey="value"
-            isAnimationActive={false}
-            stroke="none"
-          >
-            {data.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={entry.color} />
-            ))}
-          </Pie>
-        </PieChart>
-      )}
-    </div>
-  );
-};
 
 export default DonutChart;

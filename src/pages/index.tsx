@@ -50,7 +50,7 @@ export default function Home() {
   const [colorsToHighlight, setColorsToHighlight] = useState<string[]>();
 
   // the text of the donut chart when hovering over a card
-  const [donutChartHoverOnCardText, setDonutChartHoverOnCardText] = useState<string[]>(["Total Invested:", "$0.00"]);
+  const [donutChartHoverOnCardText, setDonutChartHoverOnCardText] = useState<string[]>(["Total Invested:", "$0.00", ""]);
 
   const [submitProposalModalOpen, setSubmitProposalModalOpen] = useState<boolean>(false);
   const [contributeOpen, setContributeOpen] = useState(false);
@@ -144,7 +144,7 @@ export default function Home() {
 
     setMouseHoveringOnCard(true);
 
-    setDonutChartHoverOnCardText([tokensArray[index].holdings + " " + tokensArray[index].short + ":", "$" + tokensArray[index].dollarValue]);
+    setDonutChartHoverOnCardText([tokensArray[index].holdings, tokensArray[index].dollarValue, tokensArray[index].short]);
   };
 
   // handles the case when the mouse leaves the card
@@ -223,8 +223,10 @@ export default function Home() {
               short: token.short,
             })) : []}
             customHover={mouseHoveringOnCard}
-            lines={mouseHoveringOnCard ? [donutChartHoverOnCardText[0], donutChartHoverOnCardText[1]] : ["Your Investment:", "$" + (isConnected && userFTokenBalance && fTokenTotalSupply ? ((parseFloat(userFTokenBalance) / parseFloat(fTokenTotalSupply)) * parseFloat(fundTotalValue)).toFixed(2) : "0.00")]}
+            lines={mouseHoveringOnCard ? [donutChartHoverOnCardText[0], donutChartHoverOnCardText[1], donutChartHoverOnCardText[2]] : ["Your Investment:", "$" + (isConnected && userFTokenBalance && fTokenTotalSupply ? ((parseFloat(userFTokenBalance) / parseFloat(fTokenTotalSupply)) * parseFloat(fundTotalValue)).toFixed(2) : "0.00")]}
             isConnected={isConnected}
+            userStake={isConnected && userFTokenBalance && fTokenTotalSupply ? ((parseFloat(userFTokenBalance) / parseFloat(fTokenTotalSupply)) * 100).toFixed(2) : "0.00"}
+            fundTotalValue={fundTotalValue}
           />
 
           {isConnected && <UserButton width="w-40" onClick={() => setRedeemOpen(true)}> Redeem </UserButton>}
