@@ -2,6 +2,8 @@ import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import Web3Manager from "../../lib/Web3Interface";
 
+import OnrampFeature from "../../components/OnrampFeature";
+
 export default function ProposalPage() {
   const router = useRouter();
   const { id } = router.query;
@@ -93,6 +95,8 @@ return (
           Vote to Deny
         </button>
       </div>
+
+      <OnrampFeature/>
     </div>
   );
 }
