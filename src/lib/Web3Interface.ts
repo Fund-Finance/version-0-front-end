@@ -209,15 +209,15 @@ public getProvider(): ethers.BrowserProvider {
 
     const contract = this.web3Interface.erc20TokenContracts.get(addressesToTrade[0]);
     if (!contract) throw new Error("ERC20 contract not found");
-    const decimals = await contract.decimals();
-    const rawAmount = BigInt(amountsToTrade[0] * 10 ** Number(decimals));
+    const decimals = Number(await contract.decimals());
+    const rawAmounts = amountsToTrade.map((amount: number) => BigInt(amount * 10 ** decimals));
 
     const signer = await provider.getSigner();
     console.log("In create proposal, addressesToTrade:", addressesToTrade[0]);
     await controller.connect(signer).createProposal(
-      addressesToTrade[0],
-      addressesToReceive[0],
-      rawAmount
+      addressesToTrade,
+      addressesToReceive,
+      rawAmounts
     );
   }
 
