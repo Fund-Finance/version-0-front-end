@@ -50,7 +50,7 @@ export default function Home() {
   const [colorsToHighlight, setColorsToHighlight] = useState<string[]>();
 
   // the text of the donut chart when hovering over a card
-  const [donutChartHoverOnCardText, setDonutChartHoverOnCardText] = useState<string[]>(["Total Invested:", "$0.00"]);
+  const [donutChartHoverOnCardText, setDonutChartHoverOnCardText] = useState<string[]>(["Total Invested:", "$0.00", ""]);
 
   const [submitProposalModalOpen, setSubmitProposalModalOpen] = useState<boolean>(false);
   const [contributeOpen, setContributeOpen] = useState(false);
@@ -144,7 +144,7 @@ export default function Home() {
 
     setMouseHoveringOnCard(true);
 
-    setDonutChartHoverOnCardText([tokensArray[index].holdings + " " + tokensArray[index].short + ":", "$" + tokensArray[index].dollarValue]);
+    setDonutChartHoverOnCardText([tokensArray[index].holdings, tokensArray[index].dollarValue, tokensArray[index].short]);
   };
 
   // handles the case when the mouse leaves the card
@@ -205,6 +205,8 @@ export default function Home() {
         <Link href="/activeProposals">
         <span className="text-black font-bold hover:text-blue-500 cursor-pointer px-6">Active Proposals: {numberOfActiveProposals}</span>
         </Link>
+        <p className="text-gray-600 font-bold px-6">Total Fund Value: ${fundTotalValue}</p>
+        <p className="text-gray-600 font-bold px-6">Your Stake: {isConnected && userFTokenBalance && fTokenTotalSupply ? ((parseFloat(userFTokenBalance) / parseFloat(fTokenTotalSupply)) * 100).toFixed(2) : "0.00"}%</p>
         <ConnectButton showBalance={false} chainStatus={"icon"}/>
       </div>
 
@@ -213,15 +215,19 @@ export default function Home() {
         <div className="flex items-center justify-center gap-[10vw] p-[2vw]">
           {isConnected && <UserButton width="w-40" onClick={() => setContributeOpen(true)}> Contribute </UserButton>}
 
-          {tokensArray && colorsToHighlight && <DonutChart
-            data={tokensArray.map((token) => ({
+          <DonutChart
+            data={tokensArray ? tokensArray.map((token) => ({
               name: token.name,
               value: parseFloat(token.percentage),
-              color: colorsToHighlight[tokensArray.indexOf(token)],
-            }))}
+              color: colorsToHighlight ? colorsToHighlight[tokensArray.indexOf(token)] : token.color,
+              short: token.short,
+            })) : []}
             customHover={mouseHoveringOnCard}
-            lines={mouseHoveringOnCard ? [donutChartHoverOnCardText[0], donutChartHoverOnCardText[1]] : ["Total Invested:", "$" + fundTotalValue]}
-          />}
+            lines={mouseHoveringOnCard ? [donutChartHoverOnCardText[0], donutChartHoverOnCardText[1], donutChartHoverOnCardText[2]] : ["Your Investment:", "$" + (isConnected && userFTokenBalance && fTokenTotalSupply ? ((parseFloat(userFTokenBalance) / parseFloat(fTokenTotalSupply)) * parseFloat(fundTotalValue)).toFixed(2) : "0.00")]}
+            isConnected={isConnected}
+            userStake={isConnected && userFTokenBalance && fTokenTotalSupply ? ((parseFloat(userFTokenBalance) / parseFloat(fTokenTotalSupply)) * 100).toFixed(2) : "0.00"}
+            fundTotalValue={fundTotalValue}
+          />
 
           {isConnected && <UserButton width="w-40" onClick={() => setRedeemOpen(true)}> Redeem </UserButton>}
         </div>
