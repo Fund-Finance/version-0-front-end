@@ -71,9 +71,6 @@ export default function Home()
         editedProposals.push(newProposal);
       }
 
-      console.log("Edited Proposals:", editedProposals);
-
-
       setProposals(editedProposals);
     };
 
@@ -82,6 +79,8 @@ export default function Home()
     async function queryBackend()
     {
       let rawProposals = await web3Manager.getFundActiveProposals();
+      console.log("Raw Proposals from backend:");
+      console.log(rawProposals);
       let editedProposals: frontEndProposal[] = [];
       for (let proposal of rawProposals)
       {
@@ -118,6 +117,11 @@ export default function Home()
       }
 
       setProposals(editedProposals);
+      // console.log(
+      //   "Updated proposals from backend:",
+      //   editedProposals
+      // )
+      // console.log("proposals:", proposals);
     }
     init();
     queryBackend();
@@ -127,6 +131,10 @@ export default function Home()
     return () => clearInterval(interval); // Cleanup interval on unmount
 
   }, []);
+
+  useEffect(() => {
+    console.log("Proposals updated:", proposals);
+  }, [proposals]);
 
   return (
     <div className="min-h-screen bg-gray-100 p-6 mb-6">

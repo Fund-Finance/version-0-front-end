@@ -16,6 +16,7 @@ interface Web3Interface {
   fundControllerContract: FundController | null;
   erc20TokenContracts: Map<string, ethers.Contract>;
   aggregatorContracts: Map<string, ethers.Contract>;
+  initialized: boolean;
 }
 
 class Web3Manager {
@@ -29,12 +30,19 @@ class Web3Manager {
       fundControllerContract: null,
       erc20TokenContracts: new Map(),
       aggregatorContracts: new Map(),
+      initialized: false
     };
   }
 
   public static getInstance(): Web3Manager {
     if (!Web3Manager.instance) {
       Web3Manager.instance = new Web3Manager();
+    }
+    if (!Web3Manager.instance.web3Interface.initialized) {
+      Web3Manager.instance.initialize().catch((error) => {
+        console.error("Web3Manager initialization failed:", error);
+      });
+      Web3Manager.instance.web3Interface.initialized = true;
     }
     return Web3Manager.instance;
   }
