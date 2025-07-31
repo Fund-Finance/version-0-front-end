@@ -106,8 +106,7 @@ export default function ProposalModal({ isOpen, onClose, onSubmit, supportedToke
                 />
                 </div>
 
-                {/* CONDITIONAL ARROW */}
-                  <span className="text-xl">&rarr;</span>
+              <span className="text-xl">&rarr;</span>
 
                 {/* TO TOKEN + AMOUNT */}
                 <div className="flex items-center gap-2 flex-1">
