@@ -2,7 +2,7 @@ import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import Web3Manager from "../../lib/Web3Interface";
 
-import OnrampFeature from "../../components/OnrampFeature";
+// import OnrampFeature from "../../components/OnrampFeature";
 
 export default function ProposalPage() {
   const router = useRouter();
@@ -96,7 +96,6 @@ return (
         </button>
       </div>
 
-      <OnrampFeature/>
     </div>
   );
 }
