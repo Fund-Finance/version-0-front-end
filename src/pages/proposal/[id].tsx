@@ -1,8 +1,15 @@
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import Web3Manager from "../../lib/Web3Interface";
-import { tokenAddressToName } from "../../constants/contract/ERC20Contracts";
+import { tokenAddressToName, tokenNameToColor } from "../../constants/contract/ERC20Contracts";
+import TokenAllocationCard from "../../components/TokenAllocationCard";
 
+interface Token {
+  name: string;
+  short: string;
+  percentage: string;
+  color: string;
+}
 
 type visualProposal = [
     number, // id
@@ -27,6 +34,8 @@ export default function ProposalPage() {
   const { id } = router.query;
 
   const [proposal, setProposal] = useState<null | visualProposal>(null);
+  const [fundTokenPercentageAfterProposal, setFundTokenPercentageAfterProposal] = useState<Map<string, number>>();
+  const [tokensArray, setTokensArray] = useState<Token[]>([]);
 
   const [loading, setLoading] = useState(true);
 
@@ -37,8 +46,8 @@ export default function ProposalPage() {
     if (!id) return;
 
     const fetchproposal = async () => {
+    const rawproposaldata = await web3Manager.getFundProposalById(Number(id));
       try {
-        const rawproposaldata = await web3Manager.getFundProposalById(Number(id));
         let visualProposalData:
             visualProposal = Object.assign(
             [
@@ -68,13 +77,6 @@ export default function ProposalPage() {
             visualProposalData.assetsToTradeVisual.push(
         tokenAddressToName.get(rawproposaldata.assetsToTrade[i]));
             visualProposalData.assetsToReceiveVisual.push(tokenAddressToName.get(rawproposaldata.assetsToReceive[i]));
-
-            console.log("decimals:", decimals);
-            console.log("Raw amounts in:", rawproposaldata.amountsIn[i]);
-            console.log("amountsInAdjusted:", visualProposalData.amountsInAdjusted);
-            console.log("assetsToTradeVisual:", visualProposalData.assetsToTradeVisual);
-            console.log("assetsToReceiveVisual:", visualProposalData.assetsToReceiveVisual);
-
         }
         setProposal(visualProposalData);
       } catch (err) {
@@ -84,7 +86,75 @@ export default function ProposalPage() {
       }
     };
 
+    const fetchFundDistribution = async () => {
+        const rawproposaldata = await web3Manager.getFundProposalById(Number(id));
+        const fundAssets = await web3Manager.getFundAssets();
+        let fundTokenHoldings = new Map<string, number>();
+        let fundTokenAmounts = new Map<string, number>();
+        let cryptoPerDollarAmount = new Map<string, number>();
+
+        for(let i = 0; i < fundAssets.length; i++)
+        {
+            fundTokenHoldings.set(fundAssets[i], Number(await web3Manager.getERC20HoldingsInFund(fundAssets[i])));
+            fundTokenAmounts.set(fundAssets[i], Number(await web3Manager.getERC20ValueInFund(fundAssets[i])));
+            cryptoPerDollarAmount.set(fundAssets[i],
+                (fundTokenAmounts.get(fundAssets[i]) || 0) / (fundTokenHoldings.get(fundAssets[i]) || 1));
+            console.log("cryptoPerDollarAmount:")
+            console.log(cryptoPerDollarAmount);
+        }
+        console.log(fundTokenHoldings);
+        console.log(fundTokenAmounts);
+
+        let fundTokenHoldingsAfterProposal = fundTokenHoldings;
+        for(let i = 0; i < rawproposaldata.assetsToTrade.length; i++)
+        {
+            const assetToTrade_address = rawproposaldata.assetsToTrade[i];
+            const assetToReceive_address = rawproposaldata.assetsToReceive[i];
+            let amountToTrade_crypto = Number(rawproposaldata.amountsIn[i]) / (10 ** Number(await web3Manager.getERC20TokenDecimals(assetToTrade_address)));
+            fundTokenHoldingsAfterProposal.set(
+                assetToTrade_address,
+                (fundTokenHoldingsAfterProposal.get(assetToTrade_address) || 0)
+                - amountToTrade_crypto);
+
+            const assetToTradeDollarValue = amountToTrade_crypto * (cryptoPerDollarAmount.get(assetToTrade_address) || 0);
+            const amountToReceive_crypto = assetToTradeDollarValue / (cryptoPerDollarAmount.get(assetToReceive_address) || 1);
+            fundTokenHoldingsAfterProposal.set(
+                assetToReceive_address,
+                (fundTokenHoldingsAfterProposal.get(assetToReceive_address) || 0)
+                + amountToReceive_crypto);
+        }
+
+        const totalFundValue = Number(await web3Manager.getFundTotalValue());
+        let tokenPercentagesAfterProposal = new Map<string, number>();
+        let tokens : Token[] = [];
+        for (const tokenAddress of fundTokenHoldingsAfterProposal.keys())
+        {
+            console.log(fundTokenHoldingsAfterProposal.get(tokenAddress));
+            console.log(cryptoPerDollarAmount.get(tokenAddress));
+            tokenPercentagesAfterProposal.set(tokenAddress,
+                    (fundTokenHoldingsAfterProposal.get(tokenAddress) || 0) * (cryptoPerDollarAmount.get(tokenAddress) || 0) / 
+                    (totalFundValue || 1));
+
+            const tokenNameAndShort = (tokenAddressToName.get(tokenAddress) || ["Unknown", "UNK"]);
+            const tokenName = tokenNameAndShort[0];
+            const tokenShort = tokenNameAndShort[1];
+            const tokenPercentage = ((tokenPercentagesAfterProposal.get(tokenAddress) || 0) * 100).toFixed(2) + "%";
+            const tokenColor = tokenNameToColor.get(tokenName) || "#888888";
+            tokens.push({
+                name: tokenName,
+                short: tokenShort,
+                percentage: tokenPercentage,
+                color: tokenColor
+            });
+
+        }
+        setTokensArray(tokens);
+        console.log(tokenPercentagesAfterProposal);
+        setFundTokenPercentageAfterProposal(tokenPercentagesAfterProposal);
+    }
+
     fetchproposal();
+    fetchFundDistribution();
   }, [id]);
 
   if (loading) return <div>Loading...</div>;
@@ -152,25 +222,16 @@ return (
   ))}
 </div>
 
-
-      
-
       {/* Fund Distribution */}
       <div className="border p-4 rounded shadow space-y-4">
         <h2 className="font-semibold text-lg">Fund distribution upon acceptance:</h2>
-        {/*proposal.distribution.map((dist: any, i: number) => (
-          <div key={i} className="flex items-center gap-3">
-            <img src={`/${dist.token}.png`} alt={dist.token} className="w-6 h-6" />
-            <span className="w-28">{dist.token}</span>
-            <div className="w-full bg-gray-200 h-2 rounded">
-              <div
-                className="bg-green-500 h-2 rounded"
-                style={{ width: `${dist.percentage}%` }}
-              />
-            </div>
-            <span className="w-12 text-right">{dist.percentage}%</span>
-          </div>
-        ))*/}
+        <div className="flex justify-center py-5">
+        <TokenAllocationCard
+          tokens={tokensArray}
+          onMouseOver={(index) => {}}
+          onMouseLeave={() => {}}
+        />
+        </div>
       </div>
 
       {/* Justification */}
