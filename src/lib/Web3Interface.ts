@@ -215,10 +215,13 @@ public getProvider(): ethers.BrowserProvider {
     const provider = this.web3Interface.provider;
     if (!controller || !provider) throw new Error("Web3 interface not initialized");
 
-    const contract = this.web3Interface.erc20TokenContracts.get(addressesToTrade[0]);
-    if (!contract) throw new Error("ERC20 contract not found");
-    const decimals = Number(await contract.decimals());
-    const rawAmounts = amountsToTrade.map((amount: number) => BigInt(amount * 10 ** decimals));
+    let rawAmounts: bigint[] = [];
+    for (let i = 0; i < addressesToTrade.length; i++) {
+        let contract = this.web3Interface.erc20TokenContracts.get(addressesToTrade[i]);
+        if (!contract) throw new Error("ERC20 contract not found");
+        let decimals = Number(await contract?.decimals());
+        rawAmounts.push(BigInt(Math.floor(amountsToTrade[i] * 10 ** decimals)));
+    }
 
     const signer = await provider.getSigner();
     console.log("In create proposal, addressesToTrade:", addressesToTrade[0]);
