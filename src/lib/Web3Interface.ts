@@ -16,6 +16,7 @@ interface Web3Interface {
   fundControllerContract: FundController | null;
   erc20TokenContracts: Map<string, ethers.Contract>;
   aggregatorContracts: Map<string, ethers.Contract>;
+  initialized: boolean;
 }
 
 class Web3Manager {
@@ -29,12 +30,19 @@ class Web3Manager {
       fundControllerContract: null,
       erc20TokenContracts: new Map(),
       aggregatorContracts: new Map(),
+      initialized: false
     };
   }
 
   public static getInstance(): Web3Manager {
     if (!Web3Manager.instance) {
       Web3Manager.instance = new Web3Manager();
+    }
+    if (!Web3Manager.instance.web3Interface.initialized) {
+      Web3Manager.instance.initialize().catch((error) => {
+        console.error("Web3Manager initialization failed:", error);
+      });
+      Web3Manager.instance.web3Interface.initialized = true;
     }
     return Web3Manager.instance;
   }
@@ -207,17 +215,20 @@ public getProvider(): ethers.BrowserProvider {
     const provider = this.web3Interface.provider;
     if (!controller || !provider) throw new Error("Web3 interface not initialized");
 
-    const contract = this.web3Interface.erc20TokenContracts.get(addressesToTrade[0]);
-    if (!contract) throw new Error("ERC20 contract not found");
-    const decimals = await contract.decimals();
-    const rawAmount = BigInt(amountsToTrade[0] * 10 ** Number(decimals));
+    let rawAmounts: bigint[] = [];
+    for (let i = 0; i < addressesToTrade.length; i++) {
+        let contract = this.web3Interface.erc20TokenContracts.get(addressesToTrade[i]);
+        if (!contract) throw new Error("ERC20 contract not found");
+        let decimals = Number(await contract?.decimals());
+        rawAmounts.push(BigInt(Math.floor(amountsToTrade[i] * 10 ** decimals)));
+    }
 
     const signer = await provider.getSigner();
     console.log("In create proposal, addressesToTrade:", addressesToTrade[0]);
     await controller.connect(signer).createProposal(
-      addressesToTrade[0],
-      addressesToReceive[0],
-      rawAmount
+      addressesToTrade,
+      addressesToReceive,
+      rawAmounts
     );
   }
 

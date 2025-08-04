@@ -7,16 +7,16 @@ import Web3Manager from "../../lib/Web3Interface";
 type frontEndProposal = [
     number, // id
     string, // proposer
-    string, // assetToTrade
-    string, // assetToReceive
-    number, // amountIn
+    string[], // assetsToTrade
+    string[], // assetsToReceive
+    number[], // amountsIn
     number  // approvalTimelockEnd
 ] & {
     id: number;
     proposer: string;
-    assetToTrade: string;
-    assetToReceive: string;
-    amountIn: number;
+    assetsToTrade: string[];
+    assetsToReceive: string[];
+    amountsIn: number[];
     approvalTimelockEnd: number;
 };
 const web3Manager = Web3Manager.getInstance();
@@ -42,30 +42,34 @@ export default function Home()
       for (let proposal of rawProposals)
       {
         // Convert assetToTrade to short name
-        let decimals = BigInt(await web3Manager.getERC20TokenDecimals(proposal.assetToTrade));
-        const newAmountIn = Number(proposal.amountIn) / Number((10n ** decimals));
+        let newAmountsIn: number[] = [];
+        let decimals: BigInt[] = [];
+        let decimal = BigInt(0);
+        for(let i = 0; i < newAmountsIn.length; i++)
+        {
+            decimal = BigInt(await web3Manager.getERC20TokenDecimals(proposal.assetsToTrade[i]));
+            decimals.push(decimal);
+            newAmountsIn.push(Number(proposal.amountsIn[i]) / Number(10n ** decimal));
+        }
         const newProposal: frontEndProposal = Object.assign(
         [
             Number(proposal.id),
             proposal.proposer,
-            proposal.assetToTrade,
-            proposal.assetToReceive,
-            newAmountIn,
+            proposal.assetsToTrade,
+            proposal.assetsToReceive,
+            newAmountsIn,
             Number(proposal.approvalTimelockEnd),
         ],
         {
             id: Number(proposal.id),
             proposer: proposal.proposer,
-            assetToTrade: proposal.assetToTrade,
-            assetToReceive: proposal.assetToReceive,
-            amountIn: Number(newAmountIn),
+            assetsToTrade: proposal.assetsToTrade,
+            assetsToReceive: proposal.assetsToReceive,
+            amountsIn: newAmountsIn,
             approvalTimelockEnd: Number(proposal.approvalTimelockEnd),
         });
         editedProposals.push(newProposal);
       }
-
-      console.log("Edited Proposals:", editedProposals);
-
 
       setProposals(editedProposals);
     };
@@ -75,33 +79,49 @@ export default function Home()
     async function queryBackend()
     {
       let rawProposals = await web3Manager.getFundActiveProposals();
+      console.log("Raw Proposals from backend:");
+      console.log(rawProposals);
       let editedProposals: frontEndProposal[] = [];
       for (let proposal of rawProposals)
       {
         // Convert assetToTrade to short name
-        let decimals = BigInt(await web3Manager.getERC20TokenDecimals(proposal.assetToTrade));
-        const newAmountIn = Number(proposal.amountIn) / Number(10n ** decimals);
+        // let decimals = BigInt(await web3Manager.getERC20TokenDecimals(proposal.assetToTrade));
+        // const newAmountsIn = proposal.amountsIn.map(amount: BigInt) => Number(amount) / Number(10n ** decimals);
+        let newAmountsIn: number[] = [];
+        let decimals: BigInt[] = [];
+        let decimal = BigInt(0);
+        for(let i = 0; i < newAmountsIn.length; i++)
+        {
+            decimal = BigInt(await web3Manager.getERC20TokenDecimals(proposal.assetsToTrade[i]));
+            decimals.push(decimal);
+            newAmountsIn.push(Number(proposal.amountsIn[i]) / Number(10n ** decimal));
+        }
         const newProposal: frontEndProposal = Object.assign(
         [
             Number(proposal.id),
             proposal.proposer,
-            proposal.assetToTrade,
-            proposal.assetToReceive,
-            newAmountIn,
+            proposal.assetsToTrade,
+            proposal.assetsToReceive,
+            newAmountsIn,
             Number(proposal.approvalTimelockEnd),
         ],
         {
             id: Number(proposal.id),
             proposer: proposal.proposer,
-            assetToTrade: proposal.assetToTrade,
-            assetToReceive: proposal.assetToReceive,
-            amountIn: newAmountIn,
+            assetsToTrade: proposal.assetsToTrade,
+            assetsToReceive: proposal.assetsToReceive,
+            amountsIn: newAmountsIn,
             approvalTimelockEnd: Number(proposal.approvalTimelockEnd),
         });
         editedProposals.push(newProposal);
       }
 
       setProposals(editedProposals);
+      // console.log(
+      //   "Updated proposals from backend:",
+      //   editedProposals
+      // )
+      // console.log("proposals:", proposals);
     }
     init();
     queryBackend();
@@ -111,6 +131,10 @@ export default function Home()
     return () => clearInterval(interval); // Cleanup interval on unmount
 
   }, []);
+
+  useEffect(() => {
+    console.log("Proposals updated:", proposals);
+  }, [proposals]);
 
   return (
     <div className="min-h-screen bg-gray-100 p-6 mb-6">
@@ -122,7 +146,7 @@ export default function Home()
       </header>
 
       {/* Table Header */}
-      <div className="grid grid-cols-[7%_25%_34%_34%] bg-white shadow rounded-t-md px-4 py-3 font-semibold text-gray-700">
+      <div className="grid grid-cols-[7%_25%_36%_32%] bg-white shadow rounded-t-md px-4 py-3 font-semibold text-gray-700">
         <div className="text-center">Proposal ID</div>
         <div className="text-center">User</div>
         <div className="text-center">Assets to Trade</div>
@@ -131,40 +155,55 @@ export default function Home()
 
       {/* Table Rows (mocked entries with circles) */}
       <div className="bg-white shadow rounded-b-md divide-y">
-        {proposals.map((proposal, index) => (
-          <Link
-    key={proposal.id}
-    href={`/proposal/${proposal.id}`}
-    className="grid grid-cols-[7%_25%_34%_34%] px-4 py-4 items-center text-gray-600 border-b 
-               transition duration-200 ease-in-out transform hover:bg-gray-100 hover:scale-[1.01] cursor-pointer"
-  >
-            <div className="text-center text-black">#{proposal.id}</div>
-            <div className="text-center text-black">{proposal.proposer}</div>
-            <div className="flex items-center justify-center gap-2">
-              {/* From Token */}
-              <div className="flex items-center gap-1">
-                <img src={"/" + (tokenAddressToName.get(proposal.assetToTrade)?.[0] ?? "default")
-                    + ".png"} alt={tokenAddressToName.get(proposal.assetToTrade)?.[1]} className="w-4 h-4" />
-                <span>{Number(proposal.amountIn)} {tokenAddressToName.get(proposal.assetToTrade)?.[1]}</span>
-              </div>
+     {proposals.map((proposal) => (
+    <Link
+      key={proposal.id}
+      href={`/proposal/${proposal.id}`}
+      className="grid grid-cols-[7%_25%_36%_32%] px-4 py-4 items-center text-gray-600 border-b 
+                 transition duration-200 ease-in-out transform hover:bg-gray-100 hover:scale-[1.01] cursor-pointer"
+    >
+      <div className="text-center text-black">#{proposal.id}</div>
+      <div className="text-center text-black">{proposal.proposer}</div>
+        <div className="flex items-center justify-center gap-1">
+  {proposal.assetsToTrade.slice(0, 4).map((fromToken: string, idx: number) => {
+    const toToken = proposal.assetsToReceive[idx];
 
-              {/* Arrow */}
-              <span>→</span>
+    const [fromImage, fromSymbol] = tokenAddressToName.get(fromToken) ?? ["default", "UNK"];
+    const [toImage, toSymbol] = tokenAddressToName.get(toToken) ?? ["default", "UNK"];
 
-              {/* To Token */}
-              <div className="flex items-center gap-1">
-                <img src={"/" + (tokenAddressToName.get(proposal.assetToReceive)?.[0] ?? "default")
-                    + ".png"} alt={tokenAddressToName.get(proposal.assetToReceive)?.[1]} className="w-4 h-4" />
-                <span>YY {tokenAddressToName.get(proposal.assetToReceive)?.[1]}</span>
-                </div>
-            </div>
+    return (
+      <span key={idx} className="flex items-center">
+        <span className="flex items-center gap-1">
+          <img src={`/${fromImage}.png`} alt={fromSymbol} className="w-4 h-4" />
+          <span>{fromSymbol}</span>
+        </span>
 
-            <div className="text-center text-black">
-                Justification Here
-            </div>
-          </Link>
-        ))}
+        <span className="px-1">→</span>
+
+        <span className="flex items-center gap-1">
+          <img src={`/${toImage}.png`} alt={toSymbol} className="w-4 h-4" />
+          <span>{toSymbol}</span>
+        </span>
+
+        {/* Only add comma if this is not the last shown item */}
+        {idx < Math.min(4, proposal.assetsToTrade.length - 1) && <span className="ml-1">|</span>}
+      </span>
+    );
+  })}
+
+      {proposal.assetsToTrade.length > 4 && (
+        <span className="text-gray-500">...</span>
+      )}
+
       </div>
+        <div className="text-center text-black">
+            Justification Here
+        </div>
+      
+    </Link>
+  ))}
+
+  </div>
     </div>
   );
 }
