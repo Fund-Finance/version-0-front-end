@@ -1,13 +1,6 @@
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useState, useEffect } from "react";
 import { useAccount } from "wagmi";
-// import { getFundTotalValue, getFundAssets,
-//     getERC20HoldingsInFund, populateWeb3Interface,
-//     getERC20ValueInFund, createProposal,
-//     getAggregatorPrice, getFTokenTotalSupply,
-//     contributeUsingStableCoin, redeemFromFund, 
-//     getFundTokenAmountFromUser,
-//     getFundActiveProposals} from "../utils/Web3Interface";
 
 import Web3Manager from "../lib/Web3Interface";
 
