@@ -29,6 +29,7 @@ export type ProposalStruct = {
   assetsToTrade: AddressLike[];
   assetsToReceive: AddressLike[];
   amountsIn: BigNumberish[];
+  minAmountsToReceive: BigNumberish[];
   approvalTimelockEnd: BigNumberish;
 };
 
@@ -38,6 +39,7 @@ export type ProposalStructOutput = [
   assetsToTrade: string[],
   assetsToReceive: string[],
   amountsIn: bigint[],
+  minAmountsToReceive: bigint[],
   approvalTimelockEnd: bigint
 ] & {
   id: bigint;
@@ -45,6 +47,7 @@ export type ProposalStructOutput = [
   assetsToTrade: string[];
   assetsToReceive: string[];
   amountsIn: bigint[];
+  minAmountsToReceive: bigint[];
   approvalTimelockEnd: bigint;
 };
 
@@ -103,7 +106,7 @@ export interface FundControllerInterface extends Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "createProposal",
-    values: [AddressLike[], AddressLike[], BigNumberish[]]
+    values: [AddressLike[], AddressLike[], BigNumberish[], BigNumberish[]]
   ): string;
   encodeFunctionData(
     functionFragment: "getActiveProposals",
@@ -433,7 +436,8 @@ export interface FundController extends BaseContract {
     [
       _assetsToTrade: AddressLike[],
       _assetsToReceive: AddressLike[],
-      _amountsIn: BigNumberish[]
+      _amountsIn: BigNumberish[],
+      _minAmountsToReceive: BigNumberish[]
     ],
     [void],
     "nonpayable"
@@ -604,7 +608,8 @@ export interface FundController extends BaseContract {
     [
       _assetsToTrade: AddressLike[],
       _assetsToReceive: AddressLike[],
-      _amountsIn: BigNumberish[]
+      _amountsIn: BigNumberish[],
+      _minAmountsToReceive: BigNumberish[]
     ],
     [void],
     "nonpayable"
