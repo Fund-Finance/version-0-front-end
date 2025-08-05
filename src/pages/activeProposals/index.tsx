@@ -10,7 +10,8 @@ type frontEndProposal = [
     string[], // assetsToTrade
     string[], // assetsToReceive
     number[], // amountsIn
-    number  // approvalTimelockEnd
+    number,  // approvalTimelockEnd
+    string  // justification
 ] & {
     id: number;
     proposer: string;
@@ -19,17 +20,34 @@ type frontEndProposal = [
     amountsIn: number[];
     minAmountsToReceive: number[];
     approvalTimelockEnd: number;
+    justification?: string;
 };
 const web3Manager = Web3Manager.getInstance();
 
 export default function Home()
 {
   const [proposals, setProposals] = useState<frontEndProposal[]>([]);
+  const [justifications, setJustifications] = useState<Map<number, string>>(new Map());
 
   // this use Effect will initialize the front-end
   // and query the backend frequently to update the neede values
   useEffect(() =>
   {
+
+    const readFile = async (filename: string) => {
+      const res = await fetch(`/api/readFile/${filename}`);
+      
+      if (!res.ok) {
+        const error = await res.json();
+        console.error("Error:", error.message);
+        return;
+      }
+
+      const content = await res.text(); // 🔥 because it's plain text
+      console.log("File content:", content);
+      justifications.set(Number(filename.split(".")[0]), content);
+      setJustifications(justifications);
+};
     // The initialize function which runs only once
     async function init()
     {
@@ -71,6 +89,7 @@ export default function Home()
             minAmountsToReceive: minAmountsToReceive_crypto,
             approvalTimelockEnd: Number(proposal.approvalTimelockEnd),
         });
+        await readFile(newProposal.id.toString() + ".txt");
         editedProposals.push(newProposal);
       }
 
@@ -120,6 +139,7 @@ export default function Home()
             minAmountsToReceive: minAmountsToReceive_crypto,
             approvalTimelockEnd: Number(proposal.approvalTimelockEnd),
         });
+        await readFile(newProposal.id.toString() + ".txt");
         editedProposals.push(newProposal);
       }
 
@@ -198,9 +218,13 @@ export default function Home()
       )}
 
       </div>
-        <div className="text-center text-black">
-            Justification Here
-        </div>
+    <div className="text-center text-black">
+      {(() => {
+        const justification = justifications.get(proposal.id);
+        if (!justification) return "No justification provided";
+        return justification.length >= 40 ? justification.slice(0, 40) + "..." : justification;
+      })()}
+    </div>
       
     </Link>
   ))}
