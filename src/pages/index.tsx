@@ -153,7 +153,8 @@ export default function Home() {
       setSubmitProposalModalOpen(false);
       const assetsToTrade_shorts: string[] = proposalData.map(pair => pair.from);
       const assetsToReceive_shorts: string[] = proposalData.map(pair => pair.to);
-      const amountsToTrade: number[] = proposalData.map(pair => Number(pair.amountFrom));
+      const amountsToTrade: number[] = proposalData.map(pair => Number(pair.amountToTrade));
+      const minAmountsToReceive: number[] = proposalData.map(pair => Number(pair.minAmountToReceive));
 
       const addressesToTrade: string[] = assetsToTrade_shorts.map(short => {
           const address = tokenShortToAddress.get(short);
@@ -172,7 +173,7 @@ export default function Home() {
 
       console.log("assetsToTrade_shorts: ", assetsToTrade_shorts);
 
-      web3Manager.createProposal(addressesToTrade, addressesToReceive, amountsToTrade);
+      web3Manager.createProposal(addressesToTrade, addressesToReceive, amountsToTrade, minAmountsToReceive);
   }
 
   const handleContributeToFund = async (amount: number) => {
