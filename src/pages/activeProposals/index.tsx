@@ -168,9 +168,10 @@ export default function Home()
       </header>
 
       {/* Table Header */}
-      <div className="grid grid-cols-[7%_25%_36%_32%] bg-white shadow rounded-t-md px-4 py-3 font-semibold text-gray-700">
+      <div className="grid grid-cols-[7%_7%_18%_36%_32%] bg-white shadow rounded-t-md px-4 py-3 font-semibold text-gray-700">
         <div className="text-center">Proposal ID</div>
         <div className="text-center">User</div>
+        <div className="text-center">Status</div>
         <div className="text-center">Assets to Trade</div>
         <div className="text-center">Justification</div>
       </div>
@@ -181,11 +182,19 @@ export default function Home()
     <Link
       key={proposal.id}
       href={`/proposal/${proposal.id}`}
-      className="grid grid-cols-[7%_25%_36%_32%] px-4 py-4 items-center text-gray-600 border-b 
+      className="grid grid-cols-[7%_7%_18%_36%_32%] px-4 py-4 items-center text-gray-600 border-b 
                  transition duration-200 ease-in-out transform hover:bg-gray-100 hover:scale-[1.01] cursor-pointer"
     >
       <div className="text-center text-black">#{proposal.id}</div>
-      <div className="text-center text-black">{proposal.proposer}</div>
+      <div className="text-center text-black">{proposal.proposer.slice(0,7)}...</div>
+      <div className="text-center text-black">
+      {
+          // the status of the proposal is based on the the intent to approve
+          proposal.approvalTimelockEnd == 0 && "Pending Review" ||
+          proposal.approvalTimelockEnd - Math.floor(new Date().getTime() / 1000) > 0 && "Queued" ||
+          proposal.approvalTimelockEnd - Math.floor(new Date().getTime() / 1000) <= 0 && "Pending Execution"
+      }
+      </div>
         <div className="flex items-center justify-center gap-1">
   {proposal.assetsToTrade.slice(0, 4).map((fromToken: string, idx: number) => {
     const toToken = proposal.assetsToReceive[idx];
