@@ -252,7 +252,7 @@ return (
       {/* Justification */}
       <div className="border p-4 rounded shadow">
         <h2 className="font-semibold text-lg mb-2">Justification</h2>
-        <p className="text-gray-700 whitespace-pre-wrap">{justification}</p>
+        <p className="text-black whitespace-pre-wrap">{justification}</p>
       </div>
 
       {/* Voting */}
