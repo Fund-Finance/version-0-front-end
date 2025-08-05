@@ -17,6 +17,7 @@ type visualProposal = [
     string[], // assetsToTrade
     string[], // assetsToReceive
     number[], // amountsIn
+    number[], // minAmountsToReceive
     number,  // approvalTimelockEnd
     string, // justification
 ] & {
@@ -25,6 +26,7 @@ type visualProposal = [
     assetsToTradeVisual: string[];
     assetsToReceiveVisual: string[];
     amountsInAdjusted: number[];
+    minAmountsToReceiveAdjusted: number[];
     approvalTimelockEnd: number;
     justification: string;
 };
@@ -56,6 +58,7 @@ export default function ProposalPage() {
                 [],
                 [],
                 [],
+                [],
                 Number(rawproposaldata.approvalTimelockEnd),
                 "No justification provided.",
             ],
@@ -65,6 +68,7 @@ export default function ProposalPage() {
                 assetsToTradeVisual: [],        // visual to show token name and short
                 assetsToReceiveVisual: [],      // visual to show token name and short
                 amountsInAdjusted: [],          // adjusted for decimals
+                minAmountsToReceiveAdjusted: [],// adjusted for decimals
                 approvalTimelockEnd: Number(rawproposaldata.approvalTimelockEnd),
                 justification: rawproposaldata.justification || "No justification provided.",
 
@@ -74,6 +78,8 @@ export default function ProposalPage() {
             const decimals = BigInt(await web3Manager.getERC20TokenDecimals(rawproposaldata.assetsToTrade[i]));
             visualProposalData.amountsInAdjusted.push(
                 Number(rawproposaldata.amountsIn[i]) / Number(10n ** decimals));
+            visualProposalData.minAmountsToReceiveAdjusted.push(
+                Number(rawproposaldata.minAmountsToReceive[i]) / Number(10n ** decimals));
             visualProposalData.assetsToTradeVisual.push(
         tokenAddressToName.get(rawproposaldata.assetsToTrade[i]));
             visualProposalData.assetsToReceiveVisual.push(tokenAddressToName.get(rawproposaldata.assetsToReceive[i]));
@@ -202,7 +208,7 @@ return (
   <span className="text-gray-500">→</span>
 
   {/* Fixed 'YY' placeholder */}
-  <span className="font-mono w-[20px]">YY</span>
+  <span className="font-mono">{proposal.minAmountsToReceiveAdjusted[i]}</span>
 
   {/* Asset to receive text */}
   <span className="font-mono w-[50px]">

@@ -292,6 +292,11 @@ const _abi = [
         name: "_amountIn",
         type: "uint256",
       },
+      {
+        internalType: "uint256",
+        name: "_minAmountToReceive",
+        type: "uint256",
+      },
     ],
     name: "swapAsset",
     outputs: [

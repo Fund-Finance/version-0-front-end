@@ -17,6 +17,7 @@ type frontEndProposal = [
     assetsToTrade: string[];
     assetsToReceive: string[];
     amountsIn: number[];
+    minAmountsToReceive: number[];
     approvalTimelockEnd: number;
 };
 const web3Manager = Web3Manager.getInstance();
@@ -42,14 +43,16 @@ export default function Home()
       for (let proposal of rawProposals)
       {
         // Convert assetToTrade to short name
-        let newAmountsIn: number[] = [];
+        let amountsIn_crypto: number[] = [];
+        let minAmountsToReceive_crypto: number[] = [];
         let decimals: BigInt[] = [];
         let decimal = BigInt(0);
-        for(let i = 0; i < newAmountsIn.length; i++)
+        for(let i = 0; i < amountsIn_crypto.length; i++)
         {
             decimal = BigInt(await web3Manager.getERC20TokenDecimals(proposal.assetsToTrade[i]));
             decimals.push(decimal);
-            newAmountsIn.push(Number(proposal.amountsIn[i]) / Number(10n ** decimal));
+            amountsIn_crypto.push(Number(proposal.amountsIn[i]) / Number(10n ** decimal));
+            minAmountsToReceive_crypto.push(Number(proposal.minAmountsToReceive[i]) / Number(10n ** decimal));
         }
         const newProposal: frontEndProposal = Object.assign(
         [
@@ -57,7 +60,8 @@ export default function Home()
             proposal.proposer,
             proposal.assetsToTrade,
             proposal.assetsToReceive,
-            newAmountsIn,
+            amountsIn_crypto,
+            minAmountsToReceive_crypto,
             Number(proposal.approvalTimelockEnd),
         ],
         {
@@ -65,7 +69,8 @@ export default function Home()
             proposer: proposal.proposer,
             assetsToTrade: proposal.assetsToTrade,
             assetsToReceive: proposal.assetsToReceive,
-            amountsIn: newAmountsIn,
+            amountsIn: amountsIn_crypto,
+            minAmountsToReceive: minAmountsToReceive_crypto,
             approvalTimelockEnd: Number(proposal.approvalTimelockEnd),
         });
         editedProposals.push(newProposal);
@@ -87,14 +92,16 @@ export default function Home()
         // Convert assetToTrade to short name
         // let decimals = BigInt(await web3Manager.getERC20TokenDecimals(proposal.assetToTrade));
         // const newAmountsIn = proposal.amountsIn.map(amount: BigInt) => Number(amount) / Number(10n ** decimals);
-        let newAmountsIn: number[] = [];
+        let amountsIn_crypto: number[] = [];
+        let minAmountsToReceive_crypto: number[] = [];
         let decimals: BigInt[] = [];
         let decimal = BigInt(0);
-        for(let i = 0; i < newAmountsIn.length; i++)
+        for(let i = 0; i < amountsIn_crypto.length; i++)
         {
             decimal = BigInt(await web3Manager.getERC20TokenDecimals(proposal.assetsToTrade[i]));
             decimals.push(decimal);
-            newAmountsIn.push(Number(proposal.amountsIn[i]) / Number(10n ** decimal));
+            amountsIn_crypto.push(Number(proposal.amountsIn[i]) / Number(10n ** decimal));
+            minAmountsToReceive_crypto.push(Number(proposal.minAmountsToReceive[i]) / Number(10n ** decimal));
         }
         const newProposal: frontEndProposal = Object.assign(
         [
@@ -102,7 +109,8 @@ export default function Home()
             proposal.proposer,
             proposal.assetsToTrade,
             proposal.assetsToReceive,
-            newAmountsIn,
+            amountsIn_crypto,
+            minAmountsToReceive_crypto,
             Number(proposal.approvalTimelockEnd),
         ],
         {
@@ -110,18 +118,14 @@ export default function Home()
             proposer: proposal.proposer,
             assetsToTrade: proposal.assetsToTrade,
             assetsToReceive: proposal.assetsToReceive,
-            amountsIn: newAmountsIn,
+            amountsIn: amountsIn_crypto,
+            minAmountsToReceive: minAmountsToReceive_crypto,
             approvalTimelockEnd: Number(proposal.approvalTimelockEnd),
         });
         editedProposals.push(newProposal);
       }
 
       setProposals(editedProposals);
-      // console.log(
-      //   "Updated proposals from backend:",
-      //   editedProposals
-      // )
-      // console.log("proposals:", proposals);
     }
     init();
     queryBackend();

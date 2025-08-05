@@ -115,7 +115,7 @@ export interface FundTokenInterface extends Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "swapAsset",
-    values: [AddressLike, AddressLike, BigNumberish]
+    values: [AddressLike, AddressLike, BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(functionFragment: "symbol", values?: undefined): string;
   encodeFunctionData(
@@ -342,7 +342,8 @@ export interface FundToken extends BaseContract {
     [
       _assetToTrade: AddressLike,
       _assetToGet: AddressLike,
-      _amountIn: BigNumberish
+      _amountIn: BigNumberish,
+      _minAmountToReceive: BigNumberish
     ],
     [bigint],
     "nonpayable"
@@ -452,7 +453,8 @@ export interface FundToken extends BaseContract {
     [
       _assetToTrade: AddressLike,
       _assetToGet: AddressLike,
-      _amountIn: BigNumberish
+      _amountIn: BigNumberish,
+      _minAmountToReceive: BigNumberish
     ],
     [bigint],
     "nonpayable"
