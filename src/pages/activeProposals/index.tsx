@@ -37,8 +37,6 @@ export default function Home()
           return;
 
       let rawProposals = await web3Manager.getFundActiveProposals();
-      console.log("Raw Proposals:");
-      console.log(rawProposals);
       let editedProposals: frontEndProposal[] = [];
       for (let proposal of rawProposals)
       {

@@ -105,11 +105,7 @@ export default function ProposalPage() {
             fundTokenAmounts.set(fundAssets[i], Number(await web3Manager.getERC20ValueInFund(fundAssets[i])));
             cryptoPerDollarAmount.set(fundAssets[i],
                 (fundTokenAmounts.get(fundAssets[i]) || 0) / (fundTokenHoldings.get(fundAssets[i]) || 1));
-            console.log("cryptoPerDollarAmount:")
-            console.log(cryptoPerDollarAmount);
         }
-        console.log(fundTokenHoldings);
-        console.log(fundTokenAmounts);
 
         let fundTokenHoldingsAfterProposal = fundTokenHoldings;
         for(let i = 0; i < rawproposaldata.assetsToTrade.length; i++)
@@ -135,8 +131,6 @@ export default function ProposalPage() {
         let tokens : Token[] = [];
         for (const tokenAddress of fundTokenHoldingsAfterProposal.keys())
         {
-            console.log(fundTokenHoldingsAfterProposal.get(tokenAddress));
-            console.log(cryptoPerDollarAmount.get(tokenAddress));
             tokenPercentagesAfterProposal.set(tokenAddress,
                     (fundTokenHoldingsAfterProposal.get(tokenAddress) || 0) * (cryptoPerDollarAmount.get(tokenAddress) || 0) / 
                     (totalFundValue || 1));
@@ -155,7 +149,6 @@ export default function ProposalPage() {
 
         }
         setTokensArray(tokens);
-        console.log(tokenPercentagesAfterProposal);
         setFundTokenPercentageAfterProposal(tokenPercentagesAfterProposal);
     }
 
