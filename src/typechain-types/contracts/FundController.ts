@@ -90,7 +90,9 @@ export interface FundControllerInterface extends Interface {
       | "transferOwnership"
   ): FunctionFragment;
 
-  getEvent(nameOrSignatureOrTopic: "OwnershipTransferred"): EventFragment;
+  getEvent(
+    nameOrSignatureOrTopic: "OwnershipTransferred" | "ProposalCreated"
+  ): EventFragment;
 
   encodeFunctionData(
     functionFragment: "acceptProposal",
@@ -371,6 +373,19 @@ export namespace OwnershipTransferredEvent {
   export type LogDescription = TypedLogDescription<Event>;
 }
 
+export namespace ProposalCreatedEvent {
+  export type InputTuple = [proposalId: BigNumberish, proposer: AddressLike];
+  export type OutputTuple = [proposalId: bigint, proposer: string];
+  export interface OutputObject {
+    proposalId: bigint;
+    proposer: string;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
+}
+
 export interface FundController extends BaseContract {
   connect(runner?: ContractRunner | null): FundController;
   waitForDeployment(): Promise<this>;
@@ -439,7 +454,7 @@ export interface FundController extends BaseContract {
       _amountsIn: BigNumberish[],
       _minAmountsToReceive: BigNumberish[]
     ],
-    [void],
+    [bigint],
     "nonpayable"
   >;
 
@@ -611,7 +626,7 @@ export interface FundController extends BaseContract {
       _amountsIn: BigNumberish[],
       _minAmountsToReceive: BigNumberish[]
     ],
-    [void],
+    [bigint],
     "nonpayable"
   >;
   getFunction(
@@ -766,6 +781,13 @@ export interface FundController extends BaseContract {
     OwnershipTransferredEvent.OutputTuple,
     OwnershipTransferredEvent.OutputObject
   >;
+  getEvent(
+    key: "ProposalCreated"
+  ): TypedContractEvent<
+    ProposalCreatedEvent.InputTuple,
+    ProposalCreatedEvent.OutputTuple,
+    ProposalCreatedEvent.OutputObject
+  >;
 
   filters: {
     "OwnershipTransferred(address,address)": TypedContractEvent<
@@ -777,6 +799,17 @@ export interface FundController extends BaseContract {
       OwnershipTransferredEvent.InputTuple,
       OwnershipTransferredEvent.OutputTuple,
       OwnershipTransferredEvent.OutputObject
+    >;
+
+    "ProposalCreated(uint256,address)": TypedContractEvent<
+      ProposalCreatedEvent.InputTuple,
+      ProposalCreatedEvent.OutputTuple,
+      ProposalCreatedEvent.OutputObject
+    >;
+    ProposalCreated: TypedContractEvent<
+      ProposalCreatedEvent.InputTuple,
+      ProposalCreatedEvent.OutputTuple,
+      ProposalCreatedEvent.OutputObject
     >;
   };
 }
