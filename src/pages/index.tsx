@@ -147,7 +147,7 @@ export default function Home() {
     setColorsToHighlight(colors);
   };
 
-  const handleSubmitProposal = async (proposalData: TokenPair[]) => 
+  const handleSubmitProposal = async (proposalData: TokenPair[], justification: string) => 
   {
       // close the proposal window
       setSubmitProposalModalOpen(false);
@@ -171,9 +171,24 @@ export default function Home() {
           return address;
       });
 
-      console.log("assetsToTrade_shorts: ", assetsToTrade_shorts);
 
-      web3Manager.createProposal(addressesToTrade, addressesToReceive, amountsToTrade, minAmountsToReceive);
+    const proposalId = await web3Manager.createProposal(addressesToTrade, addressesToReceive, amountsToTrade, minAmountsToReceive);
+    if(proposalId != 0)
+    {
+        console.log("Justification text:");
+        console.log(JSON.stringify({justification}));
+
+        const res = await fetch("/api/saveText", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ justification: justification, id: proposalId}),
+    });
+
+        const result = await res.json();
+        console.log("Result from backend:");
+        console.log(result);
+
+    }
   }
 
   const handleContributeToFund = async (amount: number) => {

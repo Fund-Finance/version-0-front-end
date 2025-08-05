@@ -80,15 +80,6 @@ const DonutChart = ({ data, customHover, lines, isConnected = false, userStake, 
           // Use hoveredTokenShort if data is empty (not connected)
           const shouldShow = !customHover || (hoveredTokenShort ? logoTokenShort === hoveredTokenShort : hoveredToken);
           
-          // Debug logging
-          if (customHover && index === 0) {
-            console.log('Hover state:', customHover);
-            console.log('Data:', data);
-            console.log('Logo token short:', logoTokenShort);
-            console.log('Hovered token:', hoveredToken);
-            console.log('Should show:', shouldShow);
-          }
-          
           return (
             <div
               key={index}

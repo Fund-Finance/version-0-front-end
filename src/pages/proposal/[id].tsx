@@ -36,6 +36,7 @@ export default function ProposalPage() {
   const { id } = router.query;
 
   const [proposal, setProposal] = useState<null | visualProposal>(null);
+  const [justification, setJustification] = useState<string>("");
   const [fundTokenPercentageAfterProposal, setFundTokenPercentageAfterProposal] = useState<Map<string, number>>();
   const [tokensArray, setTokensArray] = useState<Token[]>([]);
 
@@ -46,6 +47,19 @@ export default function ProposalPage() {
 
   useEffect(() => {
     if (!id) return;
+    const readFile = async (filename: string) => {
+      const res = await fetch(`/api/readFile/${filename}`);
+      
+      if (!res.ok) {
+        const error = await res.json();
+        console.error("Error:", error.message);
+        return;
+      }
+
+      const content = await res.text(); // 🔥 because it's plain text
+      console.log("File content:", content);
+      setJustification(content);
+};
 
     const fetchproposal = async () => {
     const rawproposaldata = await web3Manager.getFundProposalById(Number(id));
@@ -70,7 +84,7 @@ export default function ProposalPage() {
                 amountsInAdjusted: [],          // adjusted for decimals
                 minAmountsToReceiveAdjusted: [],// adjusted for decimals
                 approvalTimelockEnd: Number(rawproposaldata.approvalTimelockEnd),
-                justification: rawproposaldata.justification || "No justification provided.",
+                justification: justification || "No justification provided.",
 
             });
         for(let i = 0; i < rawproposaldata.assetsToTrade.length; i++)
@@ -84,6 +98,8 @@ export default function ProposalPage() {
         tokenAddressToName.get(rawproposaldata.assetsToTrade[i]));
             visualProposalData.assetsToReceiveVisual.push(tokenAddressToName.get(rawproposaldata.assetsToReceive[i]));
         }
+
+        await readFile(rawproposaldata.id.toString() + ".txt");
         setProposal(visualProposalData);
       } catch (err) {
         console.error("error fetching proposal:", err);
@@ -105,11 +121,7 @@ export default function ProposalPage() {
             fundTokenAmounts.set(fundAssets[i], Number(await web3Manager.getERC20ValueInFund(fundAssets[i])));
             cryptoPerDollarAmount.set(fundAssets[i],
                 (fundTokenAmounts.get(fundAssets[i]) || 0) / (fundTokenHoldings.get(fundAssets[i]) || 1));
-            console.log("cryptoPerDollarAmount:")
-            console.log(cryptoPerDollarAmount);
         }
-        console.log(fundTokenHoldings);
-        console.log(fundTokenAmounts);
 
         let fundTokenHoldingsAfterProposal = fundTokenHoldings;
         for(let i = 0; i < rawproposaldata.assetsToTrade.length; i++)
@@ -135,8 +147,6 @@ export default function ProposalPage() {
         let tokens : Token[] = [];
         for (const tokenAddress of fundTokenHoldingsAfterProposal.keys())
         {
-            console.log(fundTokenHoldingsAfterProposal.get(tokenAddress));
-            console.log(cryptoPerDollarAmount.get(tokenAddress));
             tokenPercentagesAfterProposal.set(tokenAddress,
                     (fundTokenHoldingsAfterProposal.get(tokenAddress) || 0) * (cryptoPerDollarAmount.get(tokenAddress) || 0) / 
                     (totalFundValue || 1));
@@ -155,7 +165,6 @@ export default function ProposalPage() {
 
         }
         setTokensArray(tokens);
-        console.log(tokenPercentagesAfterProposal);
         setFundTokenPercentageAfterProposal(tokenPercentagesAfterProposal);
     }
 
@@ -243,7 +252,7 @@ return (
       {/* Justification */}
       <div className="border p-4 rounded shadow">
         <h2 className="font-semibold text-lg mb-2">Justification</h2>
-        <p className="text-gray-700 whitespace-pre-wrap">{proposal.justification}</p>
+        <p className="text-black whitespace-pre-wrap">{justification}</p>
       </div>
 
       {/* Voting */}
