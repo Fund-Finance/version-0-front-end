@@ -9,7 +9,7 @@ interface ProposalModalProps {
   supportedTokensName: string[]
 
   onClose: () => void;
-  onSubmit: (tokenPair: TokenPair[]) => void;
+  onSubmit: (tokenPair: TokenPair[], justification: string) => void;
 }
 
 export default function ProposalModal({ isOpen, onClose, onSubmit, supportedTokensShort, supportedTokensName }: ProposalModalProps) {
@@ -181,7 +181,7 @@ export default function ProposalModal({ isOpen, onClose, onSubmit, supportedToke
             {/* SUBMIT BUTTON */}
             <button
               className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600 transition"
-              onClick={() => onSubmit(tokenPair)}
+              onClick={() => onSubmit(tokenPair, justification)}
             >
               Submit
             </button>

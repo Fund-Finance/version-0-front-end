@@ -211,7 +211,7 @@ public getProvider(): ethers.BrowserProvider {
   }
 
   public async createProposal(addressesToTrade: string[], addressesToReceive: string[],
-                              amountsToTrade: number[], minAmountsToReceive: number[]): Promise<void> {
+                              amountsToTrade: number[], minAmountsToReceive: number[]): Promise<number> {
     const controller = this.web3Interface.fundControllerContract;
     const provider = this.web3Interface.provider;
     if (!controller || !provider) throw new Error("Web3 interface not initialized");
@@ -229,12 +229,32 @@ public getProvider(): ethers.BrowserProvider {
 
     const signer = await provider.getSigner();
     console.log("In create proposal, addressesToTrade:", addressesToTrade[0]);
-    await controller.connect(signer).createProposal(
+    try{
+    const tx = await controller.connect(signer).createProposal(
       addressesToTrade,
       addressesToReceive,
       amountsToTrade_WAD,
       minAmountsToReceive_WAD
     );
+    const receipt = await tx.wait();
+    const logs = receipt?.logs || [];
+
+    for (const log of logs)
+    {
+        const parsed = controller.interface.parseLog(log) || null;
+        if (parsed != null && parsed.name === "ProposalCreated") {
+            const proposalId = Number(parsed.args.proposalId);
+            return Number(proposalId);
+        }
+    }
+
+    return 0;
+    }
+    catch(err: any)
+    {
+      return 0;
+    }
+
   }
 
   // Add other utility wrappers as needed...
