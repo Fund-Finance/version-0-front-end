@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import Web3Manager from "../../lib/Web3Interface";
 import { tokenAddressToName, tokenNameToColor } from "../../constants/contract/ERC20Contracts";
 import TokenAllocationCard from "../../components/TokenAllocationCard";
+import { useAccount } from "wagmi";
 
 interface Token {
   name: string;
@@ -34,16 +35,41 @@ type visualProposal = [
 export default function ProposalPage() {
   const router = useRouter();
   const { id } = router.query;
+  const { isConnected, address } = useAccount();
 
   const [proposal, setProposal] = useState<null | visualProposal>(null);
   const [justification, setJustification] = useState<string>("");
   const [fundTokenPercentageAfterProposal, setFundTokenPercentageAfterProposal] = useState<Map<string, number>>();
   const [tokensArray, setTokensArray] = useState<Token[]>([]);
+  const [governors, setGovernors] = useState<string[]>([]);
+  const [blockTimestamp, setBlockTimestamp] = useState<number>(0);
 
   const [loading, setLoading] = useState(true);
 
   
   const web3Manager = Web3Manager.getInstance();
+
+  const handleIntentToApprove = async () => {
+    const proposalId = Number(id);
+    console.log("Voting to approve proposal ID:", proposalId);
+
+    web3Manager.intentToApprove(proposalId);
+  }
+
+  const handleAcceptProposal = async () => {
+    const proposalId = Number(id);
+    console.log("Accepting proposal ID:", proposalId);
+
+    web3Manager.acceptFundProposal(proposalId);
+  }
+
+  const handleRejectProposal = async () => {
+    const proposalId = Number(id);
+    console.log("Rejecting proposal ID:", proposalId);
+
+    // Implement rejection logic here
+    web3Manager.rejectFundProposal(proposalId);
+  }
 
   useEffect(() => {
     if (!id) return;
@@ -89,17 +115,19 @@ export default function ProposalPage() {
             });
         for(let i = 0; i < rawproposaldata.assetsToTrade.length; i++)
         {
-            const decimals = BigInt(await web3Manager.getERC20TokenDecimals(rawproposaldata.assetsToTrade[i]));
+            const decimalsForAssetToTrade = BigInt(await web3Manager.getERC20TokenDecimals(rawproposaldata.assetsToTrade[i]));
+            const decimalsForAssetToReceive = BigInt(await web3Manager.getERC20TokenDecimals(rawproposaldata.assetsToReceive[i]));
             visualProposalData.amountsInAdjusted.push(
-                Number(rawproposaldata.amountsIn[i]) / Number(10n ** decimals));
+                Number(rawproposaldata.amountsIn[i]) / Number(10n ** decimalsForAssetToTrade));
             visualProposalData.minAmountsToReceiveAdjusted.push(
-                Number(rawproposaldata.minAmountsToReceive[i]) / Number(10n ** decimals));
+                Number(rawproposaldata.minAmountsToReceive[i]) / Number(10n ** decimalsForAssetToReceive));
             visualProposalData.assetsToTradeVisual.push(
         tokenAddressToName.get(rawproposaldata.assetsToTrade[i]));
             visualProposalData.assetsToReceiveVisual.push(tokenAddressToName.get(rawproposaldata.assetsToReceive[i]));
         }
 
         await readFile(rawproposaldata.id.toString() + ".txt");
+        setBlockTimestamp(await web3Manager.getBlockTimestamp());
         setProposal(visualProposalData);
       } catch (err) {
         console.error("error fetching proposal:", err);
@@ -167,9 +195,17 @@ export default function ProposalPage() {
         setTokensArray(tokens);
         setFundTokenPercentageAfterProposal(tokenPercentagesAfterProposal);
     }
+    const fetchGovernorData = async () => {
+       const governorsList = await web3Manager.getGovernors();
+       setGovernors(governorsList);
+    }
 
     fetchproposal();
     fetchFundDistribution();
+    fetchGovernorData();
+
+    const interval = setInterval(fetchproposal, 1000);
+    return () => clearInterval(interval); // Cleanup interval on unmount
   }, [id]);
 
   if (loading) return <div>Loading...</div>;
@@ -189,7 +225,7 @@ return (
   {proposal.amountsInAdjusted.map((amount: number, i: number) => (
     <div key={`swap-${i}`} className="relative">
       {/* Right-aligned "Swap" label */}
-      <span className="absolute left-0 top-1/2 -translate-y-1/2 font-mono text-sm font-bold">
+      <span className="absolute left-0 top-1/2 -translate-y-1/2 font-mono text-lg font-bold">
         Swap
       </span>
 
@@ -201,7 +237,7 @@ return (
   </span>
 
   {/* Asset to trade text */}
-  <span className="font-mono w-[40px]">
+  <span className="font-mono w-[45px]">
     {proposal.assetsToTradeVisual[i][1]}
   </span>
 
@@ -256,15 +292,82 @@ return (
       </div>
 
       {/* Voting */}
+      <div className="border p-4 rounded shadow">
+      <h2 className="font-semibold text-lg mb-2">Voting</h2>
+      {/* Specify the greeting message*/}
+      {
+        isConnected && governors.includes(address || "NAN") &&
+          <h2 className="font-semibold text-lg text-center">Welcome Governor</h2>
+      }
+      {
+          !isConnected || (isConnected && !governors.includes(address || "NAN")) &&
+              (proposal.approvalTimelockEnd == 0 || proposal.approvalTimelockEnd - blockTimestamp)  &&
+            <h2 className="font-semibold text-lg text-center">Only Governors can vote on a proposal</h2>
+      }
+      {
+          proposal.approvalTimelockEnd - blockTimestamp > 0 &&
+            <h2 className="font-semibold text-lg text-center">This proposal has been queued,
+            it can be accepted in: {proposal.approvalTimelockEnd - blockTimestamp} seconds</h2>
+      }
+      {
+          proposal.approvalTimelockEnd - blockTimestamp <= 0 && proposal.approvalTimelockEnd != 0 &&
+            <h2 className="font-semibold text-lg text-center">This proposal is ready to be executed</h2>
+      }
+     
+      { (proposal.approvalTimelockEnd == 0 || (proposal.approvalTimelockEnd - blockTimestamp <= 0 && proposal.approvalTimelockEnd != 0)) &&
       <div className="flex justify-between pt-4">
-        <button className="px-6 py-2 bg-green-600 text-white rounded hover:bg-green-700">
-          Vote to Accept
-        </button>
-        <button className="px-6 py-2 bg-red-600 text-white rounded hover:bg-red-700">
-          Vote to Deny
-        </button>
-      </div>
 
+      { isConnected && governors.includes(address || "NAN") && proposal.approvalTimelockEnd == 0 &&
+        <button className="px-10 py-2 bg-green-600 text-white ml-50 rounded hover:bg-green-700" onClick={handleIntentToApprove}>
+          Approve Proposal
+        </button>}
+      { isConnected && governors.includes(address || "NAN") && proposal.approvalTimelockEnd - blockTimestamp <= 0 && proposal.approvalTimelockEnd != 0 &&
+        <button className="px-10 py-2 bg-green-600 text-white ml-50 rounded hover:bg-green-700" onClick={handleAcceptProposal}>
+          Accept Proposal
+        </button>}
+        { isConnected && governors.includes(address || "NAN") && proposal.approvalTimelockEnd - blockTimestamp > 0 &&
+        <button className="px-10 py-2 bg-red-600 text-white mr-50 rounded hover:bg-red-700" onClick={handleRejectProposal}>
+          Reject Proposal
+        </button>
+      }
+        { isConnected && governors.includes(address || "NAN") && (proposal.approvalTimelockEnd - blockTimestamp <= 0 || proposal.approvalTimelockEnd == 0) &&
+        <button className="px-10 py-2 bg-red-600 text-white mr-50 rounded hover:bg-red-700" onClick={handleRejectProposal}>
+          Reject Proposal
+        </button>
+      }
+      { !isConnected || (isConnected && !governors.includes(address || "NAN")) && proposal.approvalTimelockEnd == 0 &&
+        <button className="px-10 py-2 bg-gray-300 text-white ml-50 rounded">
+          Approve Proposal
+        </button>}
+      { !isConnected || (isConnected && !governors.includes(address || "NAN")) && proposal.approvalTimelockEnd - blockTimestamp <= 0 && proposal.approvalTimelockEnd != 0 &&
+        <button className="px-10 py-2 bg-gray-300 text-white ml-50 rounded">
+          Accept Proposal
+        </button>}
+        {!isConnected || (isConnected && !governors.includes(address || "NAN")) &&
+        <button className="px-10 py-2 bg-gray-300 text-white mr-50 rounded">
+          Reject Proposal
+        </button>
+
+      }
+
+      </div>}
+
+      {
+        proposal.approvalTimelockEnd - blockTimestamp > 0 &&
+        <div className="flex justify-center pt-4">
+        { isConnected && governors.includes(address || "NAN") && proposal.approvalTimelockEnd - blockTimestamp > 0 &&
+        <button className="px-10 py-2 bg-red-600 text-white rounded hover:bg-red-700" onClick={handleRejectProposal}>
+          Reject Proposal
+        </button>}
+        {!isConnected || (isConnected && !governors.includes(address || "NAN")) &&
+        <button className="px-10 py-2 bg-gray-300 text-white rounded">
+          Reject Proposal
+        </button>
+        }
+
+        </div>
+      }
+      </div>
     </div>
   );
 }

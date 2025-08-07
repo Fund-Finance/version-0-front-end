@@ -184,6 +184,54 @@ public getProvider(): ethers.BrowserProvider {
     return activeProposals;
   }
 
+  public async getGovernors(): Promise<string[]> {
+    const controller = this.web3Interface.fundControllerContract;
+    if (!controller) return [];
+    const governors = await controller.getApprovers();
+    return governors;
+  }
+
+  public async intentToApprove(proposalId: number): Promise<void> {
+    const controller = this.web3Interface.fundControllerContract;
+    const provider = this.web3Interface.provider;
+    if (!controller || !provider) throw new Error("Web3 interface not initialized");
+
+    const signer = await provider.getSigner();
+    await controller.connect(signer).intentToAccept(BigInt(proposalId));
+  }
+
+  public async getBlockTimestamp(): Promise<number> {
+    const provider = this.web3Interface.provider;
+    if (!provider) throw new Error("Web3 interface not initialized");
+
+    const blockNumber = await provider.getBlockNumber();
+    const block = await provider.getBlock(blockNumber);
+    if(block)
+    {
+        return block.timestamp;
+    }
+  return 0;
+  }
+
+  public async acceptFundProposal(proposalId: number): Promise<void> {
+    const controller = this.web3Interface.fundControllerContract;
+    const provider = this.web3Interface.provider;
+    if (!controller || !provider) throw new Error("Web3 interface not initialized");
+
+    const signer = await provider.getSigner();
+    await controller.connect(signer).acceptProposal(BigInt(proposalId));
+
+  }
+
+  public async rejectFundProposal(proposalId: number): Promise<void> {
+    const controller = this.web3Interface.fundControllerContract;
+    const provider = this.web3Interface.provider;
+    if (!controller || !provider) throw new Error("Web3 interface not initialized");
+
+    const signer = await provider.getSigner();
+    await controller.connect(signer).rejectProposal(BigInt(proposalId));
+  }
+
   public async getFundProposalById(proposalId: number): Promise<any> {
     const controller = this.web3Interface.fundControllerContract;
     if (!controller) return null;
@@ -219,12 +267,14 @@ public getProvider(): ethers.BrowserProvider {
     let amountsToTrade_WAD: bigint[] = [];
     let minAmountsToReceive_WAD: bigint[] = [];
     for (let i = 0; i < addressesToTrade.length; i++) {
-        let contract = this.web3Interface.erc20TokenContracts.get(addressesToTrade[i]);
-        if (!contract) throw new Error("ERC20 contract not found");
-        let decimals = Number(await contract?.decimals());
-        console.log("Creating proposal, token:", amountsToTrade, "decimals:", decimals);
-        amountsToTrade_WAD.push(BigInt(Math.floor(amountsToTrade[i] * 10 ** decimals)));
-        minAmountsToReceive_WAD.push(BigInt(Math.floor(minAmountsToReceive[i] * 10 ** decimals)));
+        let contractTokenToTrade = this.web3Interface.erc20TokenContracts.get(addressesToTrade[i]);
+        let contractTokenToReceive = this.web3Interface.erc20TokenContracts.get(addressesToReceive[i]);
+        if (!contractTokenToTrade || !contractTokenToReceive) throw new Error("ERC20 contract not found");
+
+        let decimalsForTradedToken = Number(await contractTokenToTrade?.decimals());
+        let decimalsForReceivedToken = Number(await contractTokenToReceive?.decimals());
+        amountsToTrade_WAD.push(BigInt(Math.floor(amountsToTrade[i] * 10 ** decimalsForTradedToken)));
+        minAmountsToReceive_WAD.push(BigInt(Math.floor(minAmountsToReceive[i] * 10 ** decimalsForReceivedToken)));
     }
 
     const signer = await provider.getSigner();
