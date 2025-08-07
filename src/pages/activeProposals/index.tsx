@@ -28,6 +28,7 @@ export default function Home()
 {
   const [proposals, setProposals] = useState<frontEndProposal[]>([]);
   const [justifications, setJustifications] = useState<Map<number, string>>(new Map());
+  const [blockTimestamp, setBlockTimestamp] = useState<number>(0);
 
   // this use Effect will initialize the front-end
   // and query the backend frequently to update the neede values
@@ -92,7 +93,7 @@ export default function Home()
         await readFile(newProposal.id.toString() + ".txt");
         editedProposals.push(newProposal);
       }
-
+      setBlockTimestamp(await web3Manager.getBlockTimestamp());
       setProposals(editedProposals);
     };
 
@@ -143,6 +144,11 @@ export default function Home()
         editedProposals.push(newProposal);
       }
 
+      const timeSinceEpoch = await web3Manager.getBlockTimestamp();
+      console.log("Timelock end:", editedProposals.map(p => p.approvalTimelockEnd));
+      console.log("Time since epoch:", timeSinceEpoch);
+
+      setBlockTimestamp(timeSinceEpoch);
       setProposals(editedProposals);
     }
     init();
@@ -191,8 +197,8 @@ export default function Home()
       {
           // the status of the proposal is based on the the intent to approve
           proposal.approvalTimelockEnd == 0 && "Pending Review" ||
-          proposal.approvalTimelockEnd - Math.floor(new Date().getTime() / 1000) > 0 && "Queued" ||
-          proposal.approvalTimelockEnd - Math.floor(new Date().getTime() / 1000) <= 0 && "Pending Execution"
+          proposal.approvalTimelockEnd - blockTimestamp > 0 && "Queued" ||
+          proposal.approvalTimelockEnd - blockTimestamp <= 0 && "Pending Execution"
       }
       </div>
         <div className="flex items-center justify-center gap-1">
