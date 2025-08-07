@@ -59,6 +59,7 @@ export interface FundControllerInterface extends Interface {
       | "checkIsSuccessfulProposer"
       | "createProposal"
       | "getActiveProposals"
+      | "getApprovers"
       | "getProposalById"
       | "initialize"
       | "intentToAccept"
@@ -66,6 +67,7 @@ export interface FundControllerInterface extends Interface {
       | "owner"
       | "realizeFundFees"
       | "redeemAssets"
+      | "rejectProposal"
       | "renounceOwnership"
       | "s_activeProposalIds"
       | "s_approverPercentageReward"
@@ -115,6 +117,10 @@ export interface FundControllerInterface extends Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
+    functionFragment: "getApprovers",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
     functionFragment: "getProposalById",
     values: [BigNumberish]
   ): string;
@@ -137,6 +143,10 @@ export interface FundControllerInterface extends Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "redeemAssets",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "rejectProposal",
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
@@ -249,6 +259,10 @@ export interface FundControllerInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "getApprovers",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "getProposalById",
     data: BytesLike
   ): Result;
@@ -268,6 +282,10 @@ export interface FundControllerInterface extends Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "redeemAssets",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "rejectProposal",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -460,6 +478,8 @@ export interface FundController extends BaseContract {
 
   getActiveProposals: TypedContractMethod<[], [ProposalStructOutput[]], "view">;
 
+  getApprovers: TypedContractMethod<[], [string[]], "view">;
+
   getProposalById: TypedContractMethod<
     [id: BigNumberish],
     [ProposalStructOutput],
@@ -491,6 +511,12 @@ export interface FundController extends BaseContract {
   redeemAssets: TypedContractMethod<
     [_rawFTokenToRedeem: BigNumberish],
     [bigint],
+    "nonpayable"
+  >;
+
+  rejectProposal: TypedContractMethod<
+    [proposalIdToReject: BigNumberish],
+    [void],
     "nonpayable"
   >;
 
@@ -633,6 +659,9 @@ export interface FundController extends BaseContract {
     nameOrSignature: "getActiveProposals"
   ): TypedContractMethod<[], [ProposalStructOutput[]], "view">;
   getFunction(
+    nameOrSignature: "getApprovers"
+  ): TypedContractMethod<[], [string[]], "view">;
+  getFunction(
     nameOrSignature: "getProposalById"
   ): TypedContractMethod<[id: BigNumberish], [ProposalStructOutput], "view">;
   getFunction(
@@ -667,6 +696,13 @@ export interface FundController extends BaseContract {
   ): TypedContractMethod<
     [_rawFTokenToRedeem: BigNumberish],
     [bigint],
+    "nonpayable"
+  >;
+  getFunction(
+    nameOrSignature: "rejectProposal"
+  ): TypedContractMethod<
+    [proposalIdToReject: BigNumberish],
+    [void],
     "nonpayable"
   >;
   getFunction(
