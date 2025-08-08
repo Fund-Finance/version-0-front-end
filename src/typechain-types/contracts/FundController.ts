@@ -26,25 +26,28 @@ import type {
 export type ProposalStruct = {
   id: BigNumberish;
   proposer: AddressLike;
-  assetToTrade: AddressLike;
-  assetToReceive: AddressLike;
-  amountIn: BigNumberish;
+  assetsToTrade: AddressLike[];
+  assetsToReceive: AddressLike[];
+  amountsIn: BigNumberish[];
+  minAmountsToReceive: BigNumberish[];
   approvalTimelockEnd: BigNumberish;
 };
 
 export type ProposalStructOutput = [
   id: bigint,
   proposer: string,
-  assetToTrade: string,
-  assetToReceive: string,
-  amountIn: bigint,
+  assetsToTrade: string[],
+  assetsToReceive: string[],
+  amountsIn: bigint[],
+  minAmountsToReceive: bigint[],
   approvalTimelockEnd: bigint
 ] & {
   id: bigint;
   proposer: string;
-  assetToTrade: string;
-  assetToReceive: string;
-  amountIn: bigint;
+  assetsToTrade: string[];
+  assetsToReceive: string[];
+  amountsIn: bigint[];
+  minAmountsToReceive: bigint[];
   approvalTimelockEnd: bigint;
 };
 
@@ -53,35 +56,45 @@ export interface FundControllerInterface extends Interface {
     nameOrSignature:
       | "acceptProposal"
       | "addAssetToFund"
-      | "approvers"
       | "checkIsSuccessfulProposer"
       | "createProposal"
       | "getActiveProposals"
-      | "initialFundTokenValue"
+      | "getApprovers"
+      | "getProposalById"
       | "initialize"
       | "intentToAccept"
       | "issueUsingStableCoin"
       | "owner"
-      | "proposals"
       | "realizeFundFees"
       | "redeemAssets"
+      | "rejectProposal"
       | "renounceOwnership"
       | "s_activeProposalIds"
       | "s_approverPercentageReward"
+      | "s_approvers"
       | "s_epochDuration"
       | "s_epochExpirationTime"
+      | "s_initialFundTokenValue"
+      | "s_largestFeePercentage"
+      | "s_latestProposalId"
+      | "s_longestEpochDuration"
       | "s_newFeeTimelockDuration"
       | "s_proposalAcceptTimelockDuration"
+      | "s_proposals"
       | "s_proposerPercentageReward"
+      | "s_shortestEpochDuration"
+      | "s_successfulProposers"
+      | "s_totalAcceptedProposals"
       | "setApproversList"
       | "setEpochDuration"
       | "setFeePercentagesWad"
-      | "successfulProposers"
-      | "totalAcceptedProposals"
+      | "setProposalAcceptTimelockDuration"
       | "transferOwnership"
   ): FunctionFragment;
 
-  getEvent(nameOrSignatureOrTopic: "OwnershipTransferred"): EventFragment;
+  getEvent(
+    nameOrSignatureOrTopic: "OwnershipTransferred" | "ProposalCreated"
+  ): EventFragment;
 
   encodeFunctionData(
     functionFragment: "acceptProposal",
@@ -92,24 +105,24 @@ export interface FundControllerInterface extends Interface {
     values: [AddressLike, AddressLike]
   ): string;
   encodeFunctionData(
-    functionFragment: "approvers",
-    values: [BigNumberish]
-  ): string;
-  encodeFunctionData(
     functionFragment: "checkIsSuccessfulProposer",
     values: [AddressLike]
   ): string;
   encodeFunctionData(
     functionFragment: "createProposal",
-    values: [AddressLike, AddressLike, BigNumberish]
+    values: [AddressLike[], AddressLike[], BigNumberish[], BigNumberish[]]
   ): string;
   encodeFunctionData(
     functionFragment: "getActiveProposals",
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "initialFundTokenValue",
+    functionFragment: "getApprovers",
     values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getProposalById",
+    values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "initialize",
@@ -125,15 +138,15 @@ export interface FundControllerInterface extends Interface {
   ): string;
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
   encodeFunctionData(
-    functionFragment: "proposals",
-    values: [BigNumberish]
-  ): string;
-  encodeFunctionData(
     functionFragment: "realizeFundFees",
     values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "redeemAssets",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "rejectProposal",
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
@@ -149,11 +162,31 @@ export interface FundControllerInterface extends Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
+    functionFragment: "s_approvers",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
     functionFragment: "s_epochDuration",
     values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "s_epochExpirationTime",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "s_initialFundTokenValue",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "s_largestFeePercentage",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "s_latestProposalId",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "s_longestEpochDuration",
     values?: undefined
   ): string;
   encodeFunctionData(
@@ -165,7 +198,23 @@ export interface FundControllerInterface extends Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
+    functionFragment: "s_proposals",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
     functionFragment: "s_proposerPercentageReward",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "s_shortestEpochDuration",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "s_successfulProposers",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "s_totalAcceptedProposals",
     values?: undefined
   ): string;
   encodeFunctionData(
@@ -181,12 +230,8 @@ export interface FundControllerInterface extends Interface {
     values: [BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(
-    functionFragment: "successfulProposers",
+    functionFragment: "setProposalAcceptTimelockDuration",
     values: [BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "totalAcceptedProposals",
-    values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "transferOwnership",
@@ -201,7 +246,6 @@ export interface FundControllerInterface extends Interface {
     functionFragment: "addAssetToFund",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "approvers", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "checkIsSuccessfulProposer",
     data: BytesLike
@@ -215,7 +259,11 @@ export interface FundControllerInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "initialFundTokenValue",
+    functionFragment: "getApprovers",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getProposalById",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "initialize", data: BytesLike): Result;
@@ -228,13 +276,16 @@ export interface FundControllerInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "proposals", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "realizeFundFees",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
     functionFragment: "redeemAssets",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "rejectProposal",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -250,11 +301,31 @@ export interface FundControllerInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "s_approvers",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "s_epochDuration",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
     functionFragment: "s_epochExpirationTime",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "s_initialFundTokenValue",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "s_largestFeePercentage",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "s_latestProposalId",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "s_longestEpochDuration",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -266,7 +337,23 @@ export interface FundControllerInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "s_proposals",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "s_proposerPercentageReward",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "s_shortestEpochDuration",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "s_successfulProposers",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "s_totalAcceptedProposals",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -282,11 +369,7 @@ export interface FundControllerInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "successfulProposers",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "totalAcceptedProposals",
+    functionFragment: "setProposalAcceptTimelockDuration",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -301,6 +384,19 @@ export namespace OwnershipTransferredEvent {
   export interface OutputObject {
     previousOwner: string;
     newOwner: string;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
+}
+
+export namespace ProposalCreatedEvent {
+  export type InputTuple = [proposalId: BigNumberish, proposer: AddressLike];
+  export type OutputTuple = [proposalId: bigint, proposer: string];
+  export interface OutputObject {
+    proposalId: bigint;
+    proposer: string;
   }
   export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
   export type Filter = TypedDeferredTopicFilter<Event>;
@@ -353,7 +449,7 @@ export interface FundController extends BaseContract {
 
   acceptProposal: TypedContractMethod<
     [proposalIdToAccept: BigNumberish],
-    [bigint],
+    [bigint[]],
     "nonpayable"
   >;
 
@@ -363,8 +459,6 @@ export interface FundController extends BaseContract {
     "nonpayable"
   >;
 
-  approvers: TypedContractMethod<[arg0: BigNumberish], [string], "view">;
-
   checkIsSuccessfulProposer: TypedContractMethod<
     [_proposer: AddressLike],
     [bigint],
@@ -373,17 +467,24 @@ export interface FundController extends BaseContract {
 
   createProposal: TypedContractMethod<
     [
-      _assetToTrade: AddressLike,
-      _assetToReceive: AddressLike,
-      _amountIn: BigNumberish
+      _assetsToTrade: AddressLike[],
+      _assetsToReceive: AddressLike[],
+      _amountsIn: BigNumberish[],
+      _minAmountsToReceive: BigNumberish[]
     ],
-    [void],
+    [bigint],
     "nonpayable"
   >;
 
   getActiveProposals: TypedContractMethod<[], [ProposalStructOutput[]], "view">;
 
-  initialFundTokenValue: TypedContractMethod<[], [bigint], "view">;
+  getApprovers: TypedContractMethod<[], [string[]], "view">;
+
+  getProposalById: TypedContractMethod<
+    [id: BigNumberish],
+    [ProposalStructOutput],
+    "view"
+  >;
 
   initialize: TypedContractMethod<
     [_fundTokenAddress: AddressLike],
@@ -398,32 +499,23 @@ export interface FundController extends BaseContract {
   >;
 
   issueUsingStableCoin: TypedContractMethod<
-    [_USDCContributed: BigNumberish],
+    [_rawUSDCContributed: BigNumberish],
     [void],
     "nonpayable"
   >;
 
   owner: TypedContractMethod<[], [string], "view">;
 
-  proposals: TypedContractMethod<
-    [arg0: BigNumberish],
-    [
-      [bigint, string, string, string, bigint, bigint] & {
-        id: bigint;
-        proposer: string;
-        assetToTrade: string;
-        assetToReceive: string;
-        amountIn: bigint;
-        approvalTimelockEnd: bigint;
-      }
-    ],
-    "view"
-  >;
-
   realizeFundFees: TypedContractMethod<[], [void], "nonpayable">;
 
   redeemAssets: TypedContractMethod<
     [_rawFTokenToRedeem: BigNumberish],
+    [bigint],
+    "nonpayable"
+  >;
+
+  rejectProposal: TypedContractMethod<
+    [proposalIdToReject: BigNumberish],
     [void],
     "nonpayable"
   >;
@@ -448,13 +540,35 @@ export interface FundController extends BaseContract {
     "view"
   >;
 
+  s_approvers: TypedContractMethod<[arg0: BigNumberish], [string], "view">;
+
   s_epochDuration: TypedContractMethod<[], [bigint], "view">;
 
   s_epochExpirationTime: TypedContractMethod<[], [bigint], "view">;
 
+  s_initialFundTokenValue: TypedContractMethod<[], [bigint], "view">;
+
+  s_largestFeePercentage: TypedContractMethod<[], [bigint], "view">;
+
+  s_latestProposalId: TypedContractMethod<[], [bigint], "view">;
+
+  s_longestEpochDuration: TypedContractMethod<[], [bigint], "view">;
+
   s_newFeeTimelockDuration: TypedContractMethod<[], [bigint], "view">;
 
   s_proposalAcceptTimelockDuration: TypedContractMethod<[], [bigint], "view">;
+
+  s_proposals: TypedContractMethod<
+    [arg0: BigNumberish],
+    [
+      [bigint, string, bigint] & {
+        id: bigint;
+        proposer: string;
+        approvalTimelockEnd: bigint;
+      }
+    ],
+    "view"
+  >;
 
   s_proposerPercentageReward: TypedContractMethod<
     [],
@@ -467,6 +581,16 @@ export interface FundController extends BaseContract {
     ],
     "view"
   >;
+
+  s_shortestEpochDuration: TypedContractMethod<[], [bigint], "view">;
+
+  s_successfulProposers: TypedContractMethod<
+    [arg0: BigNumberish],
+    [string],
+    "view"
+  >;
+
+  s_totalAcceptedProposals: TypedContractMethod<[], [bigint], "view">;
 
   setApproversList: TypedContractMethod<
     [_newApprovers: AddressLike[]],
@@ -481,18 +605,16 @@ export interface FundController extends BaseContract {
   >;
 
   setFeePercentagesWad: TypedContractMethod<
-    [proposerPercentage: BigNumberish, _approverPercentage: BigNumberish],
+    [_proposerPercentage: BigNumberish, _approverPercentage: BigNumberish],
     [void],
     "nonpayable"
   >;
 
-  successfulProposers: TypedContractMethod<
-    [arg0: BigNumberish],
-    [string],
-    "view"
+  setProposalAcceptTimelockDuration: TypedContractMethod<
+    [_proposalAcceptTimelockDuration: BigNumberish],
+    [void],
+    "nonpayable"
   >;
-
-  totalAcceptedProposals: TypedContractMethod<[], [bigint], "view">;
 
   transferOwnership: TypedContractMethod<
     [newOwner: AddressLike],
@@ -508,7 +630,7 @@ export interface FundController extends BaseContract {
     nameOrSignature: "acceptProposal"
   ): TypedContractMethod<
     [proposalIdToAccept: BigNumberish],
-    [bigint],
+    [bigint[]],
     "nonpayable"
   >;
   getFunction(
@@ -519,28 +641,29 @@ export interface FundController extends BaseContract {
     "nonpayable"
   >;
   getFunction(
-    nameOrSignature: "approvers"
-  ): TypedContractMethod<[arg0: BigNumberish], [string], "view">;
-  getFunction(
     nameOrSignature: "checkIsSuccessfulProposer"
   ): TypedContractMethod<[_proposer: AddressLike], [bigint], "view">;
   getFunction(
     nameOrSignature: "createProposal"
   ): TypedContractMethod<
     [
-      _assetToTrade: AddressLike,
-      _assetToReceive: AddressLike,
-      _amountIn: BigNumberish
+      _assetsToTrade: AddressLike[],
+      _assetsToReceive: AddressLike[],
+      _amountsIn: BigNumberish[],
+      _minAmountsToReceive: BigNumberish[]
     ],
-    [void],
+    [bigint],
     "nonpayable"
   >;
   getFunction(
     nameOrSignature: "getActiveProposals"
   ): TypedContractMethod<[], [ProposalStructOutput[]], "view">;
   getFunction(
-    nameOrSignature: "initialFundTokenValue"
-  ): TypedContractMethod<[], [bigint], "view">;
+    nameOrSignature: "getApprovers"
+  ): TypedContractMethod<[], [string[]], "view">;
+  getFunction(
+    nameOrSignature: "getProposalById"
+  ): TypedContractMethod<[id: BigNumberish], [ProposalStructOutput], "view">;
   getFunction(
     nameOrSignature: "initialize"
   ): TypedContractMethod<
@@ -558,7 +681,7 @@ export interface FundController extends BaseContract {
   getFunction(
     nameOrSignature: "issueUsingStableCoin"
   ): TypedContractMethod<
-    [_USDCContributed: BigNumberish],
+    [_rawUSDCContributed: BigNumberish],
     [void],
     "nonpayable"
   >;
@@ -566,28 +689,19 @@ export interface FundController extends BaseContract {
     nameOrSignature: "owner"
   ): TypedContractMethod<[], [string], "view">;
   getFunction(
-    nameOrSignature: "proposals"
-  ): TypedContractMethod<
-    [arg0: BigNumberish],
-    [
-      [bigint, string, string, string, bigint, bigint] & {
-        id: bigint;
-        proposer: string;
-        assetToTrade: string;
-        assetToReceive: string;
-        amountIn: bigint;
-        approvalTimelockEnd: bigint;
-      }
-    ],
-    "view"
-  >;
-  getFunction(
     nameOrSignature: "realizeFundFees"
   ): TypedContractMethod<[], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "redeemAssets"
   ): TypedContractMethod<
     [_rawFTokenToRedeem: BigNumberish],
+    [bigint],
+    "nonpayable"
+  >;
+  getFunction(
+    nameOrSignature: "rejectProposal"
+  ): TypedContractMethod<
+    [proposalIdToReject: BigNumberish],
     [void],
     "nonpayable"
   >;
@@ -611,10 +725,25 @@ export interface FundController extends BaseContract {
     "view"
   >;
   getFunction(
+    nameOrSignature: "s_approvers"
+  ): TypedContractMethod<[arg0: BigNumberish], [string], "view">;
+  getFunction(
     nameOrSignature: "s_epochDuration"
   ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
     nameOrSignature: "s_epochExpirationTime"
+  ): TypedContractMethod<[], [bigint], "view">;
+  getFunction(
+    nameOrSignature: "s_initialFundTokenValue"
+  ): TypedContractMethod<[], [bigint], "view">;
+  getFunction(
+    nameOrSignature: "s_largestFeePercentage"
+  ): TypedContractMethod<[], [bigint], "view">;
+  getFunction(
+    nameOrSignature: "s_latestProposalId"
+  ): TypedContractMethod<[], [bigint], "view">;
+  getFunction(
+    nameOrSignature: "s_longestEpochDuration"
   ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
     nameOrSignature: "s_newFeeTimelockDuration"
@@ -622,6 +751,19 @@ export interface FundController extends BaseContract {
   getFunction(
     nameOrSignature: "s_proposalAcceptTimelockDuration"
   ): TypedContractMethod<[], [bigint], "view">;
+  getFunction(
+    nameOrSignature: "s_proposals"
+  ): TypedContractMethod<
+    [arg0: BigNumberish],
+    [
+      [bigint, string, bigint] & {
+        id: bigint;
+        proposer: string;
+        approvalTimelockEnd: bigint;
+      }
+    ],
+    "view"
+  >;
   getFunction(
     nameOrSignature: "s_proposerPercentageReward"
   ): TypedContractMethod<
@@ -636,6 +778,15 @@ export interface FundController extends BaseContract {
     "view"
   >;
   getFunction(
+    nameOrSignature: "s_shortestEpochDuration"
+  ): TypedContractMethod<[], [bigint], "view">;
+  getFunction(
+    nameOrSignature: "s_successfulProposers"
+  ): TypedContractMethod<[arg0: BigNumberish], [string], "view">;
+  getFunction(
+    nameOrSignature: "s_totalAcceptedProposals"
+  ): TypedContractMethod<[], [bigint], "view">;
+  getFunction(
     nameOrSignature: "setApproversList"
   ): TypedContractMethod<[_newApprovers: AddressLike[]], [void], "nonpayable">;
   getFunction(
@@ -644,16 +795,17 @@ export interface FundController extends BaseContract {
   getFunction(
     nameOrSignature: "setFeePercentagesWad"
   ): TypedContractMethod<
-    [proposerPercentage: BigNumberish, _approverPercentage: BigNumberish],
+    [_proposerPercentage: BigNumberish, _approverPercentage: BigNumberish],
     [void],
     "nonpayable"
   >;
   getFunction(
-    nameOrSignature: "successfulProposers"
-  ): TypedContractMethod<[arg0: BigNumberish], [string], "view">;
-  getFunction(
-    nameOrSignature: "totalAcceptedProposals"
-  ): TypedContractMethod<[], [bigint], "view">;
+    nameOrSignature: "setProposalAcceptTimelockDuration"
+  ): TypedContractMethod<
+    [_proposalAcceptTimelockDuration: BigNumberish],
+    [void],
+    "nonpayable"
+  >;
   getFunction(
     nameOrSignature: "transferOwnership"
   ): TypedContractMethod<[newOwner: AddressLike], [void], "nonpayable">;
@@ -664,6 +816,13 @@ export interface FundController extends BaseContract {
     OwnershipTransferredEvent.InputTuple,
     OwnershipTransferredEvent.OutputTuple,
     OwnershipTransferredEvent.OutputObject
+  >;
+  getEvent(
+    key: "ProposalCreated"
+  ): TypedContractEvent<
+    ProposalCreatedEvent.InputTuple,
+    ProposalCreatedEvent.OutputTuple,
+    ProposalCreatedEvent.OutputObject
   >;
 
   filters: {
@@ -676,6 +835,17 @@ export interface FundController extends BaseContract {
       OwnershipTransferredEvent.InputTuple,
       OwnershipTransferredEvent.OutputTuple,
       OwnershipTransferredEvent.OutputObject
+    >;
+
+    "ProposalCreated(uint256,address)": TypedContractEvent<
+      ProposalCreatedEvent.InputTuple,
+      ProposalCreatedEvent.OutputTuple,
+      ProposalCreatedEvent.OutputObject
+    >;
+    ProposalCreated: TypedContractEvent<
+      ProposalCreatedEvent.InputTuple,
+      ProposalCreatedEvent.OutputTuple,
+      ProposalCreatedEvent.OutputObject
     >;
   };
 }

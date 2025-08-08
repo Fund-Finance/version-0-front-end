@@ -9,7 +9,7 @@ interface ProposalModalProps {
   supportedTokensName: string[]
 
   onClose: () => void;
-  onSubmit: (tokenPairs: TokenPair[]) => void;
+  onSubmit: (tokenPair: TokenPair[], justification: string) => void;
 }
 
 export default function ProposalModal({ isOpen, onClose, onSubmit, supportedTokensShort, supportedTokensName }: ProposalModalProps) {
@@ -19,14 +19,15 @@ export default function ProposalModal({ isOpen, onClose, onSubmit, supportedToke
 
   // the state variable for the token pairs to keep track of the tokens
   // the user selects for the proposal
-  const [tokenPairs, setTokenPairs] = useState<TokenPair[]>([
-    { from: initialFromToken, to: initialToToken, amountFrom: '', amountTo: '' }
+  const [tokenPair, setTokenPair] = useState<TokenPair[]>([
+    { from: initialFromToken, to: initialToToken,
+        amountToTrade: '', minAmountToReceive: ''}
   ]);
 
-  const [justification, setJustification] = useState('');
+  const [justification, setJustification] = useState('')
 
   const resetForm = () => {
-    setTokenPairs([{ from: initialFromToken, to: initialToToken, amountFrom: '', amountTo: '' }]);
+    setTokenPair([{ from: initialFromToken, to: initialToToken, amountToTrade: '', minAmountToReceive: '' }]);
     setJustification('');
   };
 
@@ -72,7 +73,7 @@ export default function ProposalModal({ isOpen, onClose, onSubmit, supportedToke
             <h2 className="text-xl font-bold text-center mb-4">Your Proposal</h2>
 
             {/* Token Pair Selectors */}
-            {tokenPairs.map((pair, index) => (
+            {tokenPair.map((pair, index) => (
               <div key={index} className="flex items-center justify-between gap-2 mb-4">
                 {/* FROM TOKEN + AMOUNT */}
                 <div className="flex items-center gap-2 flex-1">
@@ -82,9 +83,9 @@ export default function ProposalModal({ isOpen, onClose, onSubmit, supportedToke
                     className="border rounded p-2 flex-1"
                     value={pair.from}
                     onChange={(e) => {
-                      const updated = [...tokenPairs];
+                      const updated = [...tokenPair];
                       updated[index].from = e.target.value;
-                      setTokenPairs(updated);
+                      setTokenPair(updated);
                     }}
                   >
                     {supportedTokensShort.map(token => (
@@ -97,19 +98,16 @@ export default function ProposalModal({ isOpen, onClose, onSubmit, supportedToke
                   inputMode="decimal"
                   className="w-24 border rounded p-2 text-sm"
                   placeholder="Amount"
-                  value={pair.amountFrom}
+                  value={pair.amountToTrade}
                   onChange={(e) => {
-                    const updated = [...tokenPairs];
-                    updated[index].amountFrom = e.target.value;
-                    setTokenPairs(updated);
+                    const updated = [...tokenPair];
+                    updated[index].amountToTrade = e.target.value;
+                    setTokenPair(updated);
                   }}
                 />
                 </div>
 
-                {/* CONDITIONAL ARROW */}
-                {pair.amountFrom === '' && (
-                  <span className="text-xl">&rarr;</span>
-                )}
+              <span className="text-xl">&rarr;</span>
 
                 {/* TO TOKEN + AMOUNT */}
                 <div className="flex items-center gap-2 flex-1">
@@ -119,9 +117,9 @@ export default function ProposalModal({ isOpen, onClose, onSubmit, supportedToke
                     className="border rounded p-2 flex-1"
                     value={pair.to}
                     onChange={(e) => {
-                      const updated = [...tokenPairs];
+                      const updated = [...tokenPair];
                       updated[index].to = e.target.value;
-                      setTokenPairs(updated);
+                      setTokenPair(updated);
                     }}
                   >
                     {supportedTokensShort.map(token => (
@@ -134,20 +132,20 @@ export default function ProposalModal({ isOpen, onClose, onSubmit, supportedToke
                   inputMode="decimal"
                   className="w-24 border rounded p-2 text-sm"
                   placeholder="Amount"
-                  value={pair.amountTo}
+                  value={pair.minAmountToReceive}
                   onChange={(e) => {
-                    const updated = [...tokenPairs];
-                    updated[index].amountTo = e.target.value;
-                    setTokenPairs(updated);
+                    const updated = [...tokenPair];
+                    updated[index].minAmountToReceive = e.target.value;
+                    setTokenPair(updated);
                   }}
                 />
                 </div>
 
                 {/* DELETE BUTTON */}
-                {tokenPairs.length > 1 && (
+                {tokenPair.length > 1 && (
                   <button
                     onClick={() =>
-                      setTokenPairs(tokenPairs.filter((_, i) => i !== index))
+                      setTokenPair(tokenPair.filter((_, i) => i !== index))
                     }
                     className="text-red-500 hover:text-red-700"
                     aria-label="Remove token pair"
@@ -162,7 +160,7 @@ export default function ProposalModal({ isOpen, onClose, onSubmit, supportedToke
             <button
               type="button"
               onClick={() =>
-                setTokenPairs([...tokenPairs, { from: initialFromToken, to: initialToToken, amountFrom: '', amountTo: '' }])
+                setTokenPair([...tokenPair, { from: initialFromToken, to: initialToToken, amountToTrade: '', minAmountToReceive: '' }])
               }
               className="flex items-center justify-center mx-auto mb-4 w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 text-xl font-bold"
             >
@@ -183,7 +181,7 @@ export default function ProposalModal({ isOpen, onClose, onSubmit, supportedToke
             {/* SUBMIT BUTTON */}
             <button
               className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600 transition"
-              onClick={() => onSubmit(tokenPairs)}
+              onClick={() => onSubmit(tokenPair, justification)}
             >
               Submit
             </button>

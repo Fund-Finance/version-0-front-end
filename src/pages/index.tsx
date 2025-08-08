@@ -1,15 +1,9 @@
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useState, useEffect } from "react";
 import { useAccount } from "wagmi";
-import { getFundTotalValue, getFundAssets,
-    getERC20HoldingsInFund, populateWeb3Interface,
-    getERC20ValueInFund, createProposal,
-    getAggregatorPrice, getFTokenTotalSupply,
-    contributeUsingStableCoin, redeemFromFund, 
-    getFundTokenAmountFromUser,
-    getFundActiveProposals} from "../utils/Web3Interface";
 
-import GreeterMessage from "../components/GreeterMessage";
+import Web3Manager from "../lib/Web3Interface";
+
 import UserButton from "../components/UserButton";
 
 import TokenAllocationCard from "../components/TokenAllocationCard";
@@ -21,6 +15,8 @@ import ProposalModal from "../components/ProposalModal";
 import { TokenPair } from "../types/TokenPair";
 import ContributeModal from '../components/ContributeModule';
 import RedeemModal from '../components/RedeemModale';
+
+import Link from "next/link";
 
 interface TokenInformation
 {
@@ -46,7 +42,7 @@ export default function Home() {
   const [colorsToHighlight, setColorsToHighlight] = useState<string[]>();
 
   // the text of the donut chart when hovering over a card
-  const [donutChartHoverOnCardText, setDonutChartHoverOnCardText] = useState<string[]>(["Total Invested:", "$0.00"]);
+  const [donutChartHoverOnCardText, setDonutChartHoverOnCardText] = useState<string[]>(["Total Invested:", "$0.00", ""]);
 
   const [submitProposalModalOpen, setSubmitProposalModalOpen] = useState<boolean>(false);
   const [contributeOpen, setContributeOpen] = useState(false);
@@ -55,6 +51,7 @@ export default function Home() {
   const [userFTokenBalance, setUserFTokenBalance] = useState<string>("0.00");
 
   const [numberOfActiveProposals, setNumberOfActiveProposals] = useState<number>(0);
+  const web3Manager = Web3Manager.getInstance();
 
 
   // this use Effect will initialize the front-end
@@ -67,8 +64,9 @@ export default function Home() {
       
       if (typeof window === "undefined") 
           return;
-      await populateWeb3Interface();
-      const totalValue = await getFundTotalValue();
+      await web3Manager.initialize();
+      const totalValue = await web3Manager.getFundTotalValue();
+      console.log("Total Supply: " + fTokenTotalSupply);
       setFundTotalValue(totalValue);
       let tokens = await queryBackend();
       setColorsToHighlight(tokens.map((token) => token.color));
@@ -78,22 +76,23 @@ export default function Home() {
     // run at a set interval
     async function queryBackend()
     {
-      const fTokenTotalSupply = await getFTokenTotalSupply();
+      const web3Manager = Web3Manager.getInstance();
+      const fTokenTotalSupply = await web3Manager.getFTokenTotalSupply();
       setFTokenTotalSupply(fTokenTotalSupply);
-      const usdcPrice = await getAggregatorPrice(usdcPriceAggregatorAddress);
+      const usdcPrice = await web3Manager.getAggregatorPrice(usdcPriceAggregatorAddress);
       setUsdcPrice(usdcPrice);
-      const totalValue = await getFundTotalValue();
+      const totalValue = await web3Manager.getFundTotalValue();
       setFundTotalValue(totalValue);
-      const activeProposals = await getFundActiveProposals();
+      const activeProposals = await web3Manager.getFundActiveProposals();
       setNumberOfActiveProposals(activeProposals.length);
-      const fundAssets = await getFundAssets();
+      const fundAssets = await web3Manager.getFundAssets();
 
       let tokens = [];
       for(let i = 0; i < fundAssets.length; i++)
       {
           const tokenAddress = fundAssets[i];
           const tokenNameData = tokenAddressToName.get(tokenAddress) ?? ["Unknown Token", "UNK"];
-          const tokenDollarValue = await getERC20ValueInFund(fundAssets[i]);
+          const tokenDollarValue = await web3Manager.getERC20ValueInFund(fundAssets[i]);
           const tokenPercentage = (Number(tokenDollarValue) / Number(totalValue) * 100).toFixed(2) + "%";
 
           let tokenInformation: TokenInformation = {
@@ -102,7 +101,7 @@ export default function Home() {
             percentage: tokenPercentage,
             color: tokenNameToColor.get(tokenNameData[0]) || "#000000",
             address: tokenAddress,
-            holdings: await getERC20HoldingsInFund(fundAssets[i]),
+            holdings: await web3Manager.getERC20HoldingsInFund(fundAssets[i]),
             dollarValue: tokenDollarValue
           };
 
@@ -112,7 +111,7 @@ export default function Home() {
 
       if(isConnected)
       {
-          const userBalance = await getFundTokenAmountFromUser(address || "");
+          const userBalance = await web3Manager.getFundTokenAmountFromUser(address || "");
           setUserFTokenBalance(userBalance);
       }
 
@@ -138,7 +137,7 @@ export default function Home() {
 
     setMouseHoveringOnCard(true);
 
-    setDonutChartHoverOnCardText([tokensArray[index].holdings + " " + tokensArray[index].short + ":", "$" + tokensArray[index].dollarValue]);
+    setDonutChartHoverOnCardText([tokensArray[index].holdings, tokensArray[index].dollarValue, tokensArray[index].short]);
   };
 
   // handles the case when the mouse leaves the card
@@ -148,13 +147,14 @@ export default function Home() {
     setColorsToHighlight(colors);
   };
 
-  const handleSubmitProposal = async (proposalData: TokenPair[]) => 
+  const handleSubmitProposal = async (proposalData: TokenPair[], justification: string) => 
   {
       // close the proposal window
       setSubmitProposalModalOpen(false);
       const assetsToTrade_shorts: string[] = proposalData.map(pair => pair.from);
       const assetsToReceive_shorts: string[] = proposalData.map(pair => pair.to);
-      const amountsToTrade: number[] = proposalData.map(pair => Number(pair.amountFrom));
+      const amountsToTrade: number[] = proposalData.map(pair => Number(pair.amountToTrade));
+      const minAmountsToReceive: number[] = proposalData.map(pair => Number(pair.minAmountToReceive));
 
       const addressesToTrade: string[] = assetsToTrade_shorts.map(short => {
           const address = tokenShortToAddress.get(short);
@@ -171,18 +171,35 @@ export default function Home() {
           return address;
       });
 
-      createProposal(addressesToTrade, addressesToReceive, amountsToTrade);
+
+    const proposalId = await web3Manager.createProposal(addressesToTrade, addressesToReceive, amountsToTrade, minAmountsToReceive);
+    if(proposalId != 0)
+    {
+        console.log("Justification text:");
+        console.log(JSON.stringify({justification}));
+
+        const res = await fetch("/api/saveText", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ justification: justification, id: proposalId}),
+    });
+
+        const result = await res.json();
+        console.log("Result from backend:");
+        console.log(result);
+
+    }
   }
 
   const handleContributeToFund = async (amount: number) => {
       setContributeOpen(false);
-      contributeUsingStableCoin(amount);
+      web3Manager.contributeUsingStableCoin(amount);
   }
 
   const handleRedeemFromFund = async (amount: number) => {
       setRedeemOpen(false);
       // Implement redeem logic here
-      redeemFromFund(amount);
+      web3Manager.redeemFromFund(amount);
   }
 
   return (
@@ -194,7 +211,11 @@ export default function Home() {
             <img src="/fToken.png" alt="Logo" width={25} height={25} className="rounded " />
             <p className="text-gray-600 font-bold p-1">{userFTokenBalance}</p>
         </div>
-        <p className="text-gray-600 font-bold px-6">Active Proposals: {numberOfActiveProposals}</p>
+        <Link href="/activeProposals">
+        <span className="text-black font-bold hover:text-blue-500 cursor-pointer px-6">Active Proposals: {numberOfActiveProposals}</span>
+        </Link>
+        <p className="text-gray-600 font-bold px-6">Total Fund Value: ${fundTotalValue}</p>
+        <p className="text-gray-600 font-bold px-6">Your Stake: {isConnected && userFTokenBalance && fTokenTotalSupply ? ((parseFloat(userFTokenBalance) / parseFloat(fTokenTotalSupply)) * 100).toFixed(2) : "0.00"}%</p>
         <ConnectButton showBalance={false} chainStatus={"icon"}/>
       </div>
 
@@ -203,21 +224,23 @@ export default function Home() {
         <div className="flex items-center justify-center gap-[10vw] p-[2vw]">
           {isConnected && <UserButton width="w-40" onClick={() => setContributeOpen(true)}> Contribute </UserButton>}
 
-          {tokensArray && colorsToHighlight && <DonutChart
-            data={tokensArray.map((token) => ({
+          <DonutChart
+            data={tokensArray ? tokensArray.map((token) => ({
               name: token.name,
               value: parseFloat(token.percentage),
-              color: colorsToHighlight[tokensArray.indexOf(token)],
-            }))}
+              color: colorsToHighlight ? colorsToHighlight[tokensArray.indexOf(token)] : token.color,
+              short: token.short,
+            })) : []}
             customHover={mouseHoveringOnCard}
-            lines={mouseHoveringOnCard ? [donutChartHoverOnCardText[0], donutChartHoverOnCardText[1]] : ["Total Invested:", "$" + fundTotalValue]}
-          />}
+            lines={mouseHoveringOnCard ? [donutChartHoverOnCardText[0], donutChartHoverOnCardText[1], donutChartHoverOnCardText[2]] : ["Your Investment:", "$" + (isConnected && userFTokenBalance && fTokenTotalSupply ? ((parseFloat(userFTokenBalance) / parseFloat(fTokenTotalSupply)) * parseFloat(fundTotalValue)).toFixed(2) : "0.00")]}
+            isConnected={isConnected}
+            userStake={isConnected && userFTokenBalance && fTokenTotalSupply ? ((parseFloat(userFTokenBalance) / parseFloat(fTokenTotalSupply)) * 100).toFixed(2) : "0.00"}
+            fundTotalValue={fundTotalValue}
+          />
 
           {isConnected && <UserButton width="w-40" onClick={() => setRedeemOpen(true)}> Redeem </UserButton>}
         </div>
         {isConnected && <UserButton onClick={() => setSubmitProposalModalOpen(true)}> Submit a Proposal </UserButton>}
-
-        {!isConnected && <GreeterMessage />}
 
         {isConnected && <div className="py-5"></div>}
         {tokensArray && <TokenAllocationCard

@@ -20,7 +20,7 @@ const TokenAllocationCard = ({
   onMouseLeave,
 }: TokenAllocationCardProps) => {
   return (
-    <div className="flex flex-col py-3 w-1/2 rounded-2xl overflow-hidden shadow-xl bg-white" onMouseLeave={onMouseLeave}>
+    <div className="flex flex-col w-1/2 rounded-2xl overflow-hidden shadow-xl bg-white" onMouseLeave={onMouseLeave}>
       {tokens.map((token, index: number) => (
         <div
           key={index}

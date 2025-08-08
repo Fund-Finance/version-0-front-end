@@ -46,9 +46,10 @@ export interface FundTokenInterface extends Interface {
       | "name"
       | "owner"
       | "renounceOwnership"
+      | "s_controllerAddress"
       | "s_supportedAssets"
+      | "s_swapRouter"
       | "swapAsset"
-      | "swapRouter"
       | "symbol"
       | "totalSupply"
       | "transfer"
@@ -101,16 +102,20 @@ export interface FundTokenInterface extends Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
+    functionFragment: "s_controllerAddress",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
     functionFragment: "s_supportedAssets",
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
-    functionFragment: "swapAsset",
-    values: [AddressLike, AddressLike, BigNumberish]
+    functionFragment: "s_swapRouter",
+    values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "swapRouter",
-    values?: undefined
+    functionFragment: "swapAsset",
+    values: [AddressLike, AddressLike, BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(functionFragment: "symbol", values?: undefined): string;
   encodeFunctionData(
@@ -153,11 +158,18 @@ export interface FundTokenInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "s_controllerAddress",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "s_supportedAssets",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(
+    functionFragment: "s_swapRouter",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "swapAsset", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "swapRouter", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "symbol", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "totalSupply",
@@ -316,23 +328,26 @@ export interface FundToken extends BaseContract {
 
   renounceOwnership: TypedContractMethod<[], [void], "nonpayable">;
 
+  s_controllerAddress: TypedContractMethod<[], [string], "view">;
+
   s_supportedAssets: TypedContractMethod<
     [arg0: BigNumberish],
     [[string, string] & { token: string; aggregator: string }],
     "view"
   >;
 
+  s_swapRouter: TypedContractMethod<[], [string], "view">;
+
   swapAsset: TypedContractMethod<
     [
       _assetToTrade: AddressLike,
       _assetToGet: AddressLike,
-      _amountIn: BigNumberish
+      _amountIn: BigNumberish,
+      _minAmountToReceive: BigNumberish
     ],
     [bigint],
     "nonpayable"
   >;
-
-  swapRouter: TypedContractMethod<[], [string], "view">;
 
   symbol: TypedContractMethod<[], [string], "view">;
 
@@ -420,6 +435,9 @@ export interface FundToken extends BaseContract {
     nameOrSignature: "renounceOwnership"
   ): TypedContractMethod<[], [void], "nonpayable">;
   getFunction(
+    nameOrSignature: "s_controllerAddress"
+  ): TypedContractMethod<[], [string], "view">;
+  getFunction(
     nameOrSignature: "s_supportedAssets"
   ): TypedContractMethod<
     [arg0: BigNumberish],
@@ -427,19 +445,20 @@ export interface FundToken extends BaseContract {
     "view"
   >;
   getFunction(
+    nameOrSignature: "s_swapRouter"
+  ): TypedContractMethod<[], [string], "view">;
+  getFunction(
     nameOrSignature: "swapAsset"
   ): TypedContractMethod<
     [
       _assetToTrade: AddressLike,
       _assetToGet: AddressLike,
-      _amountIn: BigNumberish
+      _amountIn: BigNumberish,
+      _minAmountToReceive: BigNumberish
     ],
     [bigint],
     "nonpayable"
   >;
-  getFunction(
-    nameOrSignature: "swapRouter"
-  ): TypedContractMethod<[], [string], "view">;
   getFunction(
     nameOrSignature: "symbol"
   ): TypedContractMethod<[], [string], "view">;

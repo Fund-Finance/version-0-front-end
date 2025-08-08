@@ -192,7 +192,7 @@ const _abi = [
             type: "address",
           },
         ],
-        internalType: "struct asset[]",
+        internalType: "struct Asset[]",
         name: "",
         type: "tuple[]",
       },
@@ -203,6 +203,25 @@ const _abi = [
   {
     inputs: [],
     name: "getTotalValueOfFund",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "_asset",
+        type: "address",
+      },
+    ],
+    name: "getValueOfAssetInFund",
     outputs: [
       {
         internalType: "uint256",
@@ -248,7 +267,7 @@ const _abi = [
             type: "address",
           },
         ],
-        internalType: "struct asset[]",
+        internalType: "struct Asset[]",
         name: "",
         type: "tuple[]",
       },
@@ -271,6 +290,11 @@ const _abi = [
       {
         internalType: "uint256",
         name: "_amountIn",
+        type: "uint256",
+      },
+      {
+        internalType: "uint256",
+        name: "_minAmountToReceive",
         type: "uint256",
       },
     ],

@@ -41,6 +41,7 @@ export interface IFundTokenInterface extends Interface {
       | "decimals"
       | "getAssets"
       | "getTotalValueOfFund"
+      | "getValueOfAssetInFund"
       | "mint"
       | "s_supportedAssets"
       | "swapAsset"
@@ -78,6 +79,10 @@ export interface IFundTokenInterface extends Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
+    functionFragment: "getValueOfAssetInFund",
+    values: [AddressLike]
+  ): string;
+  encodeFunctionData(
     functionFragment: "mint",
     values: [AddressLike, BigNumberish]
   ): string;
@@ -87,7 +92,7 @@ export interface IFundTokenInterface extends Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "swapAsset",
-    values: [AddressLike, AddressLike, BigNumberish]
+    values: [AddressLike, AddressLike, BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "totalSupply",
@@ -111,6 +116,10 @@ export interface IFundTokenInterface extends Interface {
   decodeFunctionResult(functionFragment: "getAssets", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "getTotalValueOfFund",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getValueOfAssetInFund",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "mint", data: BytesLike): Result;
@@ -241,6 +250,12 @@ export interface IFundToken extends BaseContract {
 
   getTotalValueOfFund: TypedContractMethod<[], [bigint], "view">;
 
+  getValueOfAssetInFund: TypedContractMethod<
+    [_asset: AddressLike],
+    [bigint],
+    "view"
+  >;
+
   mint: TypedContractMethod<
     [_to: AddressLike, _amount: BigNumberish],
     [void],
@@ -253,7 +268,8 @@ export interface IFundToken extends BaseContract {
     [
       _assetToTrade: AddressLike,
       _assetToGet: AddressLike,
-      _amountIn: BigNumberish
+      _amountIn: BigNumberish,
+      _minAmountToReceive: BigNumberish
     ],
     [bigint],
     "nonpayable"
@@ -318,6 +334,9 @@ export interface IFundToken extends BaseContract {
     nameOrSignature: "getTotalValueOfFund"
   ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
+    nameOrSignature: "getValueOfAssetInFund"
+  ): TypedContractMethod<[_asset: AddressLike], [bigint], "view">;
+  getFunction(
     nameOrSignature: "mint"
   ): TypedContractMethod<
     [_to: AddressLike, _amount: BigNumberish],
@@ -333,7 +352,8 @@ export interface IFundToken extends BaseContract {
     [
       _assetToTrade: AddressLike,
       _assetToGet: AddressLike,
-      _amountIn: BigNumberish
+      _amountIn: BigNumberish,
+      _minAmountToReceive: BigNumberish
     ],
     [bigint],
     "nonpayable"
