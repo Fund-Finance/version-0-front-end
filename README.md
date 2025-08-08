@@ -30,6 +30,8 @@
 - Revamped the donut chart and made it look much nicer
 - Fixed minor bugs regarding caching and waiting for the backend
 - Added the intent to approve visual to the front-end
+- Added coinbase on-ramp component (to be experimented with later)
 - Added support for a few more assets to be visualized
     - Aave
     - Chainlink
+- Minor cleanup of code and formatting of pages 
