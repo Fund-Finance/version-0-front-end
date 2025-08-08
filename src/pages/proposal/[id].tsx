@@ -51,24 +51,25 @@ export default function ProposalPage() {
 
   const handleIntentToApprove = async () => {
     const proposalId = Number(id);
-    console.log("Voting to approve proposal ID:", proposalId);
 
     web3Manager.intentToApprove(proposalId);
   }
 
   const handleAcceptProposal = async () => {
     const proposalId = Number(id);
-    console.log("Accepting proposal ID:", proposalId);
 
-    web3Manager.acceptFundProposal(proposalId);
+    await web3Manager.acceptFundProposal(proposalId);
+
+    router.push("/");
+
   }
 
   const handleRejectProposal = async () => {
     const proposalId = Number(id);
-    console.log("Rejecting proposal ID:", proposalId);
 
     // Implement rejection logic here
-    web3Manager.rejectFundProposal(proposalId);
+    await web3Manager.rejectFundProposal(proposalId);
+    router.push("/");
   }
 
   useEffect(() => {
@@ -82,13 +83,13 @@ export default function ProposalPage() {
         return;
       }
 
-      const content = await res.text(); // 🔥 because it's plain text
-      console.log("File content:", content);
+      const content = await res.text();
       setJustification(content);
 };
 
     const fetchproposal = async () => {
     const rawproposaldata = await web3Manager.getFundProposalById(Number(id));
+    console.log(rawproposaldata);
       try {
         let visualProposalData:
             visualProposal = Object.assign(

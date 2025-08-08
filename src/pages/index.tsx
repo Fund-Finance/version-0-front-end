@@ -4,7 +4,6 @@ import { useAccount } from "wagmi";
 
 import Web3Manager from "../lib/Web3Interface";
 
-import GreeterMessage from "../components/GreeterMessage";
 import UserButton from "../components/UserButton";
 
 import TokenAllocationCard from "../components/TokenAllocationCard";
@@ -67,6 +66,7 @@ export default function Home() {
           return;
       await web3Manager.initialize();
       const totalValue = await web3Manager.getFundTotalValue();
+      console.log("Total Supply: " + fTokenTotalSupply);
       setFundTotalValue(totalValue);
       let tokens = await queryBackend();
       setColorsToHighlight(tokens.map((token) => token.color));
@@ -241,8 +241,6 @@ export default function Home() {
           {isConnected && <UserButton width="w-40" onClick={() => setRedeemOpen(true)}> Redeem </UserButton>}
         </div>
         {isConnected && <UserButton onClick={() => setSubmitProposalModalOpen(true)}> Submit a Proposal </UserButton>}
-
-        {!isConnected && <GreeterMessage />}
 
         {isConnected && <div className="py-5"></div>}
         {tokensArray && <TokenAllocationCard
