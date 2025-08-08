@@ -21,3 +21,15 @@
 - Added the following display items to the header:
     - The amount of fToken the user has
     - The number of active Proposals
+
+### v0.4:
+- Added a page for the active proposals
+- Reformated web3Manager to be a class
+- Added a page for each individual proposal
+- Adjusted redeem module to show USDC only
+- Revamped the donut chart and made it look much nicer
+- Fixed minor bugs regarding caching and waiting for the backend
+- Added the intent to approve visual to the front-end
+- Added support for a few more assets to be visualized
+    - Aave
+    - Chainlink
