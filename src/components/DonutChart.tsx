@@ -24,9 +24,13 @@ const DonutChart = ({ data, customHover, lines, isConnected = false, userStake, 
     "/United States Dollar Coin.png",
     "/Wrapped Ethereum.png", 
     "/Coinbase Bitcoin.png",
+    "/Aave.png",
+    "/Chainlink.png",
     "/United States Dollar Coin.png",
     "/Wrapped Ethereum.png", 
-    "/Coinbase Bitcoin.png"
+    "/Coinbase Bitcoin.png",
+    "/Aave.png",
+    "/Chainlink.png",
   ];
 
   if (!isClient) return null;
@@ -56,7 +60,9 @@ const DonutChart = ({ data, customHover, lines, isConnected = false, userStake, 
           const logoToTokenMap: { [key: string]: string } = {
             '/United States Dollar Coin.png': 'USDC',
             '/Wrapped Ethereum.png': 'wETH',
-            '/Coinbase Bitcoin.png': 'cbBTC'
+            '/Coinbase Bitcoin.png': 'cbBTC',
+            '/Chainlink.png': 'LINK',
+            '/Aave.png': 'AAVE',
           };
           
           // Get the token short name for this logo
@@ -85,8 +91,8 @@ const DonutChart = ({ data, customHover, lines, isConnected = false, userStake, 
               key={index}
               className="absolute w-8 h-8 transition-opacity duration-300"
               style={{
-                left: `${50 + 37.5 * Math.cos((index * 60) * Math.PI / 180)}%`,
-                top: `${50 + 37.5 * Math.sin((index * 60) * Math.PI / 180)}%`,
+                left: `${50 + 37.5 * Math.cos((index * (360 / tokenLogos.length)) * Math.PI / 180)}%`,
+                top: `${50 + 37.5 * Math.sin((index * (360 / tokenLogos.length)) * Math.PI / 180)}%`,
                 transform: 'translate(-50%, -50%)',
                 animation: `bounce 2s ${index * 0.5}s infinite`,
                 opacity: shouldShow ? 1 : 0,

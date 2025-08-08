@@ -8,6 +8,7 @@ import { GenericChainlinkAggregator } from "../constants/contract/GenericChainli
 import { FundController__factory, FundController } from "../typechain-types";
 import { FundToken__factory, FundToken } from "../typechain-types";
 import { ProposalStructOutput } from "../typechain-types/contracts/FundController";
+import { RectangleCircle } from "lucide-react";
 
 
 interface Web3Interface {
@@ -197,7 +198,12 @@ public getProvider(): ethers.BrowserProvider {
     if (!controller || !provider) throw new Error("Web3 interface not initialized");
 
     const signer = await provider.getSigner();
-    await controller.connect(signer).intentToAccept(BigInt(proposalId));
+    try
+    {
+        const tx = await controller.connect(signer).intentToAccept(BigInt(proposalId));
+        await tx.wait();
+    }
+    catch(err: any){}
   }
 
   public async getBlockTimestamp(): Promise<number> {
@@ -219,7 +225,12 @@ public getProvider(): ethers.BrowserProvider {
     if (!controller || !provider) throw new Error("Web3 interface not initialized");
 
     const signer = await provider.getSigner();
-    await controller.connect(signer).acceptProposal(BigInt(proposalId));
+    try
+    {
+        const tx = await controller.connect(signer).acceptProposal(BigInt(proposalId));
+        await tx.wait();
+    }
+    catch(err: any){}
 
   }
 
@@ -229,12 +240,18 @@ public getProvider(): ethers.BrowserProvider {
     if (!controller || !provider) throw new Error("Web3 interface not initialized");
 
     const signer = await provider.getSigner();
-    await controller.connect(signer).rejectProposal(BigInt(proposalId));
+    try
+    {
+        const tx = await controller.connect(signer).rejectProposal(BigInt(proposalId));
+        await tx.wait();
+    }
+    catch(err: any){}
   }
 
   public async getFundProposalById(proposalId: number): Promise<any> {
     const controller = this.web3Interface.fundControllerContract;
     if (!controller) return null;
+
     return await controller.getProposalById(BigInt(proposalId));
   }
 
@@ -245,7 +262,9 @@ public getProvider(): ethers.BrowserProvider {
 
     const signer = await provider.getSigner();
     const rawAmount = BigInt(amount) * 10n ** 6n;
-    await controller.connect(signer).issueUsingStableCoin(rawAmount);
+    const tx = await controller.connect(signer).issueUsingStableCoin(rawAmount);
+    const receipt = await tx.wait();
+    console.log(receipt);
   }
 
   public async redeemFromFund(amount: number): Promise<void> {
@@ -255,7 +274,15 @@ public getProvider(): ethers.BrowserProvider {
 
     const signer = await provider.getSigner();
     const rawAmount = BigInt(amount) * 10n ** 18n;
-    await controller.connect(signer).redeemAssets(rawAmount);
+
+    try
+    {
+        const tx = await controller.connect(signer).redeemAssets(rawAmount);
+        await tx.wait();
+    }
+
+    
+    catch(err: any){}
   }
 
   public async createProposal(addressesToTrade: string[], addressesToReceive: string[],
