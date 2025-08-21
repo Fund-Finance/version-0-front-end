@@ -4,6 +4,8 @@ import Web3Manager from "../../lib/Web3Interface";
 import { tokenAddressToName, tokenNameToColor } from "../../constants/contract/ERC20Contracts";
 import TokenAllocationCard from "../../components/TokenAllocationCard";
 import { useAccount } from "wagmi";
+import { time } from "console";
+import { mine } from "viem/actions";
 
 interface Token {
   name: string;
@@ -89,7 +91,6 @@ export default function ProposalPage() {
 
     const fetchproposal = async () => {
     const rawproposaldata = await web3Manager.getFundProposalById(Number(id));
-    console.log(rawproposaldata);
       try {
         let visualProposalData:
             visualProposal = Object.assign(
@@ -128,7 +129,10 @@ export default function ProposalPage() {
         }
 
         await readFile(rawproposaldata.id.toString() + ".txt");
-        setBlockTimestamp(await web3Manager.getBlockTimestamp());
+        const timestamp = await web3Manager.getBlockTimestamp();
+        console.log("Block timestamp:", timestamp);
+
+        setBlockTimestamp(timestamp);
         setProposal(visualProposalData);
       } catch (err) {
         console.error("error fetching proposal:", err);
@@ -200,6 +204,12 @@ export default function ProposalPage() {
        const governorsList = await web3Manager.getGovernors();
        setGovernors(governorsList);
     }
+
+    // const fetchBlockTimestamp = async () => {
+    //     const timestamp = await web3Manager.getBlockTimestamp();
+    //     console.log("Block timestamp:", timestamp);
+    //     setBlockTimestamp(timestamp);
+    // }
 
     fetchproposal();
     fetchFundDistribution();

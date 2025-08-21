@@ -49,9 +49,13 @@ class Web3Manager {
   }
 
   public async initialize() {
+    if (this.web3Interface.initialized) return;
     if (typeof window === "undefined" || !window.ethereum) throw new Error("MetaMask not available");
 
     this.web3Interface.provider = new ethers.BrowserProvider(window.ethereum);
+    this.web3Interface.provider.on("block", (blockNumber) => {
+        console.log("New block received:", blockNumber);
+        });
     const provider = this.web3Interface.provider;
 
     this.web3Interface.fundTokenContract = FundToken__factory.connect(
@@ -207,16 +211,27 @@ public getProvider(): ethers.BrowserProvider {
   }
 
   public async getBlockTimestamp(): Promise<number> {
-    const provider = this.web3Interface.provider;
-    if (!provider) throw new Error("Web3 interface not initialized");
+    const controller = this.web3Interface.fundControllerContract;
+    // const provider = this.web3Interface.provider;
+    const provider = new ethers.JsonRpcProvider("http://localhost:8545");
+    if (!controller || !provider) throw new Error("Web3 interface not initialized");
 
-    const blockNumber = await provider.getBlockNumber();
-    const block = await provider.getBlock(blockNumber);
-    if(block)
-    {
-        return block.timestamp;
-    }
-  return 0;
+    // local blockchain ping
+    // const rand = Number(Math.random() * 1000);
+    // console.log("Random number for ping: ", rand);
+    // await provider.send("eth_call", [rand]);
+    //
+    // await provider.send("eth_gasPrice", []);
+
+    // console.log("Provider polling interval: ", provider.pollingInterval);
+
+    const blockNumber3 = await provider.getBlockNumber();
+    console.log("Current block number from getBlockNumber: ", blockNumber3);
+    const block = (await provider.getBlock(blockNumber3));
+    console.log("True block timestamp: ", block?.timestamp);
+    if (!block) return 0;
+
+    return block.timestamp;
   }
 
   public async acceptFundProposal(proposalId: number): Promise<void> {
@@ -264,7 +279,6 @@ public getProvider(): ethers.BrowserProvider {
     const rawAmount = BigInt(amount) * 10n ** 6n;
     const tx = await controller.connect(signer).issueUsingStableCoin(rawAmount);
     const receipt = await tx.wait();
-    console.log(receipt);
   }
 
   public async redeemFromFund(amount: number): Promise<void> {
