@@ -245,7 +245,10 @@ public getProvider(): ethers.BrowserProvider {
         const tx = await controller.connect(signer).acceptProposal(BigInt(proposalId));
         await tx.wait();
     }
-    catch(err: any){}
+    catch(err: any)
+    {
+        throw new Error(err);
+    }
 
   }
 
@@ -260,14 +263,24 @@ public getProvider(): ethers.BrowserProvider {
         const tx = await controller.connect(signer).rejectProposal(BigInt(proposalId));
         await tx.wait();
     }
-    catch(err: any){}
+    catch(err: any)
+    {
+        throw new Error(err);
+    }
   }
 
   public async getFundProposalById(proposalId: number): Promise<any> {
     const controller = this.web3Interface.fundControllerContract;
     if (!controller) return null;
 
-    return await controller.getProposalById(BigInt(proposalId));
+    try
+    {
+        return await controller.getProposalById(BigInt(proposalId));
+    }
+    catch (err: any)
+    {
+        throw new Error(`Failed to get proposal by ID ${proposalId}`);
+    }
   }
 
   public async contributeUsingStableCoin(amount: number): Promise<void> {

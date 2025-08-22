@@ -60,9 +60,12 @@ export default function ProposalPage() {
   const handleAcceptProposal = async () => {
     const proposalId = Number(id);
 
-    await web3Manager.acceptFundProposal(proposalId);
-
-    router.push("/");
+    try
+    {
+        await web3Manager.acceptFundProposal(proposalId);
+        router.push("/");
+    }
+    catch (err) {}
 
   }
 
@@ -70,8 +73,12 @@ export default function ProposalPage() {
     const proposalId = Number(id);
 
     // Implement rejection logic here
-    await web3Manager.rejectFundProposal(proposalId);
-    router.push("/");
+    try
+    {
+        await web3Manager.rejectFundProposal(proposalId);
+        router.push("/");
+    }
+    catch (err) {}
   }
 
   useEffect(() => {
@@ -90,7 +97,15 @@ export default function ProposalPage() {
 };
 
     const fetchproposal = async () => {
-    const rawproposaldata = await web3Manager.getFundProposalById(Number(id));
+    let rawproposaldata;
+    try
+    {
+        rawproposaldata = await web3Manager.getFundProposalById(Number(id));
+    }
+    catch (err)
+    {
+        router.push("/");
+    }
       try {
         let visualProposalData:
             visualProposal = Object.assign(
@@ -142,7 +157,15 @@ export default function ProposalPage() {
     };
 
     const fetchFundDistribution = async () => {
-        const rawproposaldata = await web3Manager.getFundProposalById(Number(id));
+        let rawproposaldata;
+        try
+        {
+            rawproposaldata = await web3Manager.getFundProposalById(Number(id));
+        }
+        catch (err)
+        {
+            router.push("/");
+        }
         const fundAssets = await web3Manager.getFundAssets();
         let fundTokenHoldings = new Map<string, number>();
         let fundTokenAmounts = new Map<string, number>();
