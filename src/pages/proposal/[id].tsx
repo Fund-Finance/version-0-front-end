@@ -4,6 +4,8 @@ import Web3Manager from "../../lib/Web3Interface";
 import { tokenAddressToName, tokenNameToColor } from "../../constants/contract/ERC20Contracts";
 import TokenAllocationCard from "../../components/TokenAllocationCard";
 import { useAccount } from "wagmi";
+import { time } from "console";
+import { mine } from "viem/actions";
 
 interface Token {
   name: string;
@@ -58,9 +60,12 @@ export default function ProposalPage() {
   const handleAcceptProposal = async () => {
     const proposalId = Number(id);
 
-    await web3Manager.acceptFundProposal(proposalId);
-
-    router.push("/");
+    try
+    {
+        await web3Manager.acceptFundProposal(proposalId);
+        router.push("/");
+    }
+    catch (err) {}
 
   }
 
@@ -68,8 +73,12 @@ export default function ProposalPage() {
     const proposalId = Number(id);
 
     // Implement rejection logic here
-    await web3Manager.rejectFundProposal(proposalId);
-    router.push("/");
+    try
+    {
+        await web3Manager.rejectFundProposal(proposalId);
+        router.push("/");
+    }
+    catch (err) {}
   }
 
   useEffect(() => {
@@ -88,8 +97,15 @@ export default function ProposalPage() {
 };
 
     const fetchproposal = async () => {
-    const rawproposaldata = await web3Manager.getFundProposalById(Number(id));
-    console.log(rawproposaldata);
+    let rawproposaldata;
+    try
+    {
+        rawproposaldata = await web3Manager.getFundProposalById(Number(id));
+    }
+    catch (err)
+    {
+        router.push("/");
+    }
       try {
         let visualProposalData:
             visualProposal = Object.assign(
@@ -128,7 +144,10 @@ export default function ProposalPage() {
         }
 
         await readFile(rawproposaldata.id.toString() + ".txt");
-        setBlockTimestamp(await web3Manager.getBlockTimestamp());
+        const timestamp = await web3Manager.getBlockTimestamp();
+        console.log("Block timestamp:", timestamp);
+
+        setBlockTimestamp(timestamp);
         setProposal(visualProposalData);
       } catch (err) {
         console.error("error fetching proposal:", err);
@@ -138,7 +157,15 @@ export default function ProposalPage() {
     };
 
     const fetchFundDistribution = async () => {
-        const rawproposaldata = await web3Manager.getFundProposalById(Number(id));
+        let rawproposaldata;
+        try
+        {
+            rawproposaldata = await web3Manager.getFundProposalById(Number(id));
+        }
+        catch (err)
+        {
+            router.push("/");
+        }
         const fundAssets = await web3Manager.getFundAssets();
         let fundTokenHoldings = new Map<string, number>();
         let fundTokenAmounts = new Map<string, number>();
@@ -200,6 +227,12 @@ export default function ProposalPage() {
        const governorsList = await web3Manager.getGovernors();
        setGovernors(governorsList);
     }
+
+    // const fetchBlockTimestamp = async () => {
+    //     const timestamp = await web3Manager.getBlockTimestamp();
+    //     console.log("Block timestamp:", timestamp);
+    //     setBlockTimestamp(timestamp);
+    // }
 
     fetchproposal();
     fetchFundDistribution();

@@ -60,6 +60,7 @@ export interface FundControllerInterface extends Interface {
       | "createProposal"
       | "getActiveProposals"
       | "getApprovers"
+      | "getBlockTimeStamp"
       | "getProposalById"
       | "initialize"
       | "intentToAccept"
@@ -118,6 +119,10 @@ export interface FundControllerInterface extends Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "getApprovers",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getBlockTimeStamp",
     values?: undefined
   ): string;
   encodeFunctionData(
@@ -260,6 +265,10 @@ export interface FundControllerInterface extends Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "getApprovers",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getBlockTimeStamp",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -480,6 +489,8 @@ export interface FundController extends BaseContract {
 
   getApprovers: TypedContractMethod<[], [string[]], "view">;
 
+  getBlockTimeStamp: TypedContractMethod<[], [bigint], "view">;
+
   getProposalById: TypedContractMethod<
     [id: BigNumberish],
     [ProposalStructOutput],
@@ -661,6 +672,9 @@ export interface FundController extends BaseContract {
   getFunction(
     nameOrSignature: "getApprovers"
   ): TypedContractMethod<[], [string[]], "view">;
+  getFunction(
+    nameOrSignature: "getBlockTimeStamp"
+  ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
     nameOrSignature: "getProposalById"
   ): TypedContractMethod<[id: BigNumberish], [ProposalStructOutput], "view">;
