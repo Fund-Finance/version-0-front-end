@@ -37,3 +37,8 @@
     - Aave
     - Chainlink
 - Minor cleanup of code and formatting of pages 
+
+### v0.4.1:
+- Bug fixes:
+    - The timing bug where the intent to approve never refreshes and gets stuck waiting for time to pass
+    - The bug where if a user clicks reject or accept proposal but then declines the metamask transaction, they get redirected anyway to the home page. Now if they decline a metamask transaction, they stay on the proposal page
